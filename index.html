@@ -4,25 +4,39 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
-    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="styles.css" />
     <title>Submitter</title>
   </head>
   <script type="module" src="script.js" defer></script>
   <body>
     <header></header>
-    <div class="container">
+    <main class="container">
       <h1>Welcome to Better Submitter</h1>
-      <form action="">
-        <label for="matno">Enter Matric or Jamb Reg No to proceed</label>
-        <input
-          type="text"
-          name="matno"
-          id="matno"
-          placeholder="Enter Matric or Jamb Reg No"
-          required
-        />
-        <button type="submit">Proceed</button>
+      <form class="step-form" method="post" action="#">
+        <div
+          data-step-first
+          data-step-1
+          class="form-step active first-step"
+          id="first-step"
+        >
+          <label for="matno">Enter Matric or Jamb Reg No to proceed</label>
+          <input
+            data-input-studentId
+            type="text"
+            name="matno"
+            id="matno"
+            placeholder="Enter Matric or Jamb Reg No eg. UG/00/1234"
+            required
+          />
+          <button data-proceed-btn class="btn proceed-btn" type="button">
+            Proceed
+          </button>
+          <section data-spinner-section class="loader">
+            <span class="spinner"></span>
+            <p>please wait....</p>
+          </section>
+        </div>
       </form>
-    </div>
+    </main>
   </body>
 </html>
