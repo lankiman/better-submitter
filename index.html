@@ -13,21 +13,88 @@
     <main class="container">
       <h1>Welcome to Better Submitter</h1>
       <form class="step-form" method="post" action="#">
+        <!--First form Step section-->
         <div
           data-step-first
           data-step-1
-          class="form-step active first-step"
+          class="form-step first-step"
           id="first-step"
         >
           <label for="studentId">Enter Matric or Jamb Reg No to proceed</label>
+          <span
+            data-error-studentId
+            class="error-studentId text-error-inactive"
+          ></span>
           <input
             data-input-studentId
+            class="text-input"
             type="text"
             name="studentId"
-            id="studentId"
+            id="studentId-input"
             placeholder="Enter Matric or Jamb Reg No eg. UG/00/1234"
             required
           />
+          <button data-proceed-btn class="btn proceed-btn" type="button">
+            Proceed
+          </button>
+          <section data-spinner-section class="loader">
+            <span class="spinner"></span>
+            <p>please wait....</p>
+          </section>
+        </div>
+
+        <!--Second form Step section, for inputing user detials-->
+        <div
+          data-step-student-details
+          data-step-2
+          class="form-step active student-details-step"
+          id="student-details-step"
+        >
+          <section
+            class="input-section firstname-input-section student-details-step-input-section"
+          >
+            <label class="input-label" for="firstname">Firstname</label>
+            <span data-error-firstname class="error-firstname"></span>
+            <input
+              data-input-firstname
+              class="text-input"
+              type="text"
+              name="firstname"
+              id="firstname-input"
+              placeholder="Enter Firstname"
+              required
+            />
+          </section>
+          <section
+            class="input-section surname-input-section student-details-step-input-section"
+          >
+            <label class="input-label" for="surname">Surname</label>
+            <span data-error-surname class="error-surname"></span>
+            <input
+              data-input-surname
+              class="text-input"
+              type="text"
+              name="surname"
+              id="surname-input"
+              placeholder="Enter Surname"
+              required
+            />
+          </section>
+
+          <section
+            class="input-section middlename-input-section student-details-step-input-section"
+          >
+            <label class="input-label" for="middlename">Middlename</label>
+            <span data-error-middlename class="error-middlename"></span>
+            <input
+              data-input-surname
+              class="text-input"
+              type="text"
+              name="middlename"
+              id="middlename-input"
+              placeholder="Enter Middlename"
+            />
+          </section>
           <button data-proceed-btn class="btn proceed-btn" type="button">
             Proceed
           </button>
