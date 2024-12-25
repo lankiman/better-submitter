@@ -35,14 +35,14 @@ const handleFirstStep = (() => {
 
   function updateUIonError(error) {
     studentIdInputError.textContent = error;
-    studentIdInputError.classList.add("text-error-active");
+    studentIdInputError.classList.add("active");
     studentIdInput.classList.add("input-error-active");
     studentIdInput.focus();
   }
 
   function clearUIError() {
     studentIdInputError.textContent = "";
-    studentIdInputError.classList.remove("text-error-active");
+    studentIdInputError.classList.remove("active");
     studentIdInput.classList.remove("input-error-active");
   }
 
@@ -127,3 +127,165 @@ const handleFirstStep = (() => {
 })();
 
 handleFirstStep.init();
+
+const handleStudentDetailsStep = (() => {
+  const studentDetailsStepContainer = document.querySelector(
+    "[data-step-student-details]"
+  );
+
+  const proceedButton =
+    studentDetailsStepContainer.querySelector("[data-proceed-btn]");
+  const spinnerSection = studentDetailsStepContainer.querySelector(
+    "[data-spinner-section]"
+  );
+
+  const studentDataInputFields =
+    studentDetailsStepContainer.querySelectorAll(".text-input");
+
+  function updateUIonProceed() {
+    proceedButton.setAttribute("disabled", "true");
+    spinnerSection.classList.add("active");
+  }
+  function updateUItoDefault() {
+    proceedButton.removeAttribute("disabled");
+    spinnerSection.classList.remove("active");
+  }
+
+  function populateStudentDataError(data) {
+    let errors = {};
+    data.forEach((element) => {
+      if (element.name == "firstname" && element.value == "") {
+        errors = { ...errors, firstname: "Firstname field is required" };
+      }
+      if (element.name == "surname" && element.value == "") {
+        errors = { ...errors, surname: "Surnname field is required" };
+      }
+      if (element.name == "department" && element.value == "") {
+        errors = { ...errors, department: "Please choose a department" };
+      }
+    });
+    return errors;
+  }
+
+  function populateStudentDataErrorMessageFields(errors) {
+    Object.entries(errors).forEach(([key, value]) => {
+      studentDetailsStepContainer.querySelector(
+        `[data-error-${key}]`
+      ).textContent = value;
+      studentDetailsStepContainer
+        .querySelector(`[data-error-${key}]`)
+        .classList.add("active");
+
+      studentDetailsStepContainer
+        .querySelector(`[data-input-${key}]`)
+        .classList.add("input-error-active");
+    });
+  }
+
+  function resetStudentDataErrorMessageFields(errors, fields) {
+    const errorElements = studentDetailsStepContainer.querySelectorAll(
+      "[data-student-details-error-message-field]"
+    );
+
+    let keys = Object.keys(errors);
+    errorElements.forEach((errorElement) => {
+      const key = errorElement.id.split("-")[0];
+      if (!errors.hasOwnProperty(key)) {
+        errorElement.textContent = "";
+        errorElement.classList.remove("active");
+      }
+    });
+
+    fields.forEach((field) => {
+      if (!keys.includes(field.id.split("-")[0])) {
+        field.classList.remove("input-error-active");
+      }
+    });
+  }
+
+  function validateStudentDetails(data) {
+    let errors = populateStudentDataError(data);
+    populateStudentDataErrorMessageFields(errors);
+    resetStudentDataErrorMessageFields(errors, data);
+    if (errors) {
+      return false;
+    }
+    return true;
+  }
+
+  function updateSingleDetailsFieldErrorMessage(
+    inputField,
+    messageField,
+    message
+  ) {
+    inputField.classList.add("input-error-active");
+    messageField.textContent = message;
+    messageField.classList.add("active");
+  }
+  function resetSingleDetailsFieldErrorMessage(inputField, messageField) {
+    inputField.classList.remove("input-error-active");
+    messageField.textContent = "";
+    messageField.classList.remove("active");
+  }
+
+  function validateSingleStudentDetailsField(inputField) {
+    const fieldName = inputField.id.split("-")[0];
+    const messageField = studentDetailsStepContainer.querySelector(
+      `[data-error-${fieldName}]`
+    );
+
+    if (fieldName == "firstname" && inputField.value == "") {
+      updateSingleDetailsFieldErrorMessage(
+        inputField,
+        messageField,
+        "Firstname field is required"
+      );
+    }
+
+    if (fieldName == "surname" && inputField.value == "") {
+      updateSingleDetailsFieldErrorMessage(
+        inputField,
+        messageField,
+        "Surnname field is required"
+      );
+    }
+
+    if (fieldName == "department" && inputField.value == "") {
+      updateSingleDetailsFieldErrorMessage(
+        inputField,
+        messageField,
+        "Department field is required"
+      );
+    }
+
+    if (inputField.value) {
+      resetSingleDetailsFieldErrorMessage(inputField, messageField);
+    }
+  }
+  let proceededBefore = false;
+
+  function handleStudentDataProceed() {
+    proceededBefore = true;
+    updateUIonProceed();
+    const isValidData = validateStudentDetails(studentDataInputFields);
+    if (!isValidData) {
+      updateUItoDefault();
+    }
+  }
+
+  function addEventListiners() {
+    proceedButton.addEventListener("click", handleStudentDataProceed);
+    studentDataInputFields.forEach((field) => {
+      field.addEventListener("input", (e) => {
+        if (proceededBefore) {
+          validateSingleStudentDetailsField(field);
+        }
+      });
+    });
+  }
+  return {
+    init: addEventListiners
+  };
+})();
+
+handleStudentDetailsStep.init();

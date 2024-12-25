@@ -20,10 +20,12 @@
           class="form-step first-step"
           id="first-step"
         >
-          <label for="studentId">Enter Matric or Jamb Reg No to proceed</label>
+          <label for="studentId-input"
+            >Enter Matric or Jamb Reg No to proceed</label
+          >
           <span
             data-error-studentId
-            class="error-studentId text-error-inactive"
+            class="error-studentId text-error-message"
           ></span>
           <input
             data-input-studentId
@@ -53,8 +55,13 @@
           <section
             class="input-section firstname-input-section student-details-step-input-section"
           >
-            <label class="input-label" for="firstname">Firstname</label>
-            <span data-error-firstname class="error-firstname"></span>
+            <label class="input-label" for="firstname-input">Firstname</label>
+            <span
+              data-student-details-error-message-field
+              data-error-firstname
+              class="error-firstname text-error-message"
+              id="firstname-error-field"
+            ></span>
             <input
               data-input-firstname
               class="text-input"
@@ -68,8 +75,13 @@
           <section
             class="input-section surname-input-section student-details-step-input-section"
           >
-            <label class="input-label" for="surname">Surname</label>
-            <span data-error-surname class="error-surname"></span>
+            <label class="input-label" for="surname-input">Surname</label>
+            <span
+              data-student-details-error-message-field
+              data-error-surname
+              class="error-surname text-error-message"
+              id="surname-error-field"
+            ></span>
             <input
               data-input-surname
               class="text-input"
@@ -84,8 +96,13 @@
           <section
             class="input-section middlename-input-section student-details-step-input-section"
           >
-            <label class="input-label" for="middlename">Middlename</label>
-            <span data-error-middlename class="error-middlename"></span>
+            <label class="input-label" for="middlename-input">Middlename</label>
+            <span
+              data-student-details-error-message-field
+              data-error-middlename
+              class="error-middlename text-error-message"
+              id="middlename-error-field"
+            ></span>
             <input
               data-input-surname
               class="text-input"
@@ -94,6 +111,36 @@
               id="middlename-input"
               placeholder="Enter Middlename"
             />
+          </section>
+
+          <section
+            class="input-section deparment-select-section deparment-input-section student-details-step-input-section"
+          >
+            <label class="input-label" for="department-input">Department</label>
+            <span
+              data-student-details-error-message-field
+              data-error-department
+              class="error-department text-error-message"
+              id="department-error-field"
+            ></span>
+            <select
+              data-input-department
+              data-select-deparment
+              class="text-input select-input"
+              type="text"
+              name="department"
+              id="department-input"
+              required
+            >
+              <option default value="">Select Department</option>
+              <option value="Agriculture">Agriculture</option>
+              <option value="Civil">Civil</option>
+              <option value="Chemical">Chemical</option>
+              <option value="Electrical">Electrical</option>
+              <option value="Marine">Marine</option>
+              <option value="Mechanical">Mechanical</option>
+              <option value="Petroleum">Petroleum</option>
+            </select>
           </section>
           <button data-proceed-btn class="btn proceed-btn" type="button">
             Proceed
