@@ -10,14 +10,14 @@
   <script type="module" src="script.js" defer></script>
   <body>
     <header></header>
-    <main class="container">
+    <main data-container class="container">
       <h1>Welcome to Better Submitter</h1>
       <form class="step-form" method="post" action="#">
         <!--First form Step section-->
         <div
           data-step-first
           data-step-1
-          class="form-step first-step"
+          class="form-step active first-step"
           id="first-step"
         >
           <label for="studentId-input"
@@ -49,7 +49,7 @@
         <div
           data-step-student-details
           data-step-2
-          class="form-step active student-details-step"
+          class="form-step student-details-step"
           id="student-details-step"
         >
           <section
@@ -133,7 +133,7 @@
               required
             >
               <option default value="">Select Department</option>
-              <option value="Agriculture">Agriculture</option>
+              <option value="Agricultural">Agriculture</option>
               <option value="Civil">Civil</option>
               <option value="Chemical">Chemical</option>
               <option value="Electrical">Electrical</option>
@@ -142,12 +142,14 @@
               <option value="Petroleum">Petroleum</option>
             </select>
           </section>
-          <button data-proceed-btn class="btn proceed-btn" type="button">
-            Proceed
-          </button>
-          <section data-spinner-section class="loader">
-            <span class="spinner"></span>
-            <p>please wait....</p>
+          <section>
+            <button data-proceed-btn class="btn proceed-btn" type="button">
+              Proceed
+            </button>
+            <section data-spinner-section class="loader">
+              <span class="spinner"></span>
+              <p>please wait....</p>
+            </section>
           </section>
         </div>
       </form>

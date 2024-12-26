@@ -1,14 +1,27 @@
 //Globals
 
+//general funcions
 function computeFormToShow(hide, show) {
   const formToShow = document.querySelector(`[data-step-${show}]`);
-  if (formToShow) {
-    formToShow.classList.add("active");
-  }
-  if (hide) {
-    hide.classList.remove(hide);
-  }
+  const generalContainer = document.querySelector("[data-container]");
+  generalContainer.classList.add("change-form");
+  formToShow.classList.add("active");
+  hide.classList.add("slide-out");
+  formToShow.classList.add("slide-in");
+  hide.addEventListener("animationend", () => {
+    hide.classList.remove("active");
+    hide.classList.remove("slide-out");
+    formToShow.classList.remove("slide-in");
+    generalContainer.classList.remove("change-form");
+  });
 }
+
+function getCurrentStudentId() {
+  const id = handleFirstStep.getCurrentStudentId();
+  return id;
+}
+
+//handle first step
 
 const handleFirstStep = (() => {
   const firstStepContainer = document.querySelector("[data-step-first]");
@@ -64,45 +77,109 @@ const handleFirstStep = (() => {
     return true;
   }
 
-  function checkForStudent() {
-    const req = new XMLHttpRequest();
-    req.open(
-      "GET",
-      `http://localhost:5239/student/?studentId=${studentIdInput.value}`,
-      true
-    );
+  //   function checkForStudentReqeust() {
+  //     const req = new XMLHttpRequest();
+  //     req.open(
+  //       "GET",
+  //       `http://localhost:5239/student/?studentId=${studentIdInput.value}`,
+  //       true
+  //     );
 
-    req.onload = function () {
-      if (this.status == 200) {
-        let reponse = JSON.parse(this.response);
-        sessionStorage.setItem(
-          "currentStudentGeneralData",
-          JSON.stringify(this.response)
-        );
-        updateUItoDefault();
-        console.log(reponse);
-      } else {
+  //     req.onload = function () {
+  //       if (this.status == 200) {
+  //         let response = JSON.parse(this.response);
+  //         sessionStorage.setItem(
+  //           "currentStudentGeneralData",
+  //           JSON.stringify(this.response)
+  //         );
+  //         updateUItoDefault();
+  //         console.log(response);
+  //         return response;
+  //       } else {
+  //         updateUItoDefault();
+  //         console.log(this.response);
+  //         return JSON.parse(this.response);
+  //       }
+  //     };
+  //     req.onerror = function () {
+  //       updateUItoDefault();
+  //       console.log(this.response);
+  //       return JSON.parse(this.response);
+  //     };
+
+  //     req.send();
+  //   }
+
+  //   let proceededBefore = false;
+
+  //   async function handleProceed() {
+  //     proceededBefore = true;
+  //     let studentIdValidationResult = validateStudentId(studentIdInput.value);
+  //     if (studentIdValidationResult) {
+  //       clearUIError();
+  //       updateUIonProceed();
+  //       var response = await checkForStudentReqeust();
+  //       console.log(response);
+  //       if (response.status == "NotPresent") {
+  //         computeFormToShow(firstStepContainer, "student-details");
+  //       }
+  //     }
+  //   }
+
+  function checkForStudentRequest() {
+    return new Promise((resolve, reject) => {
+      const req = new XMLHttpRequest();
+      req.open(
+        "GET",
+        `http://localhost:5239/student/?studentId=${studentIdInput.value}`,
+        true
+      );
+
+      req.onload = function () {
+        if (this.status == 200) {
+          let response = JSON.parse(this.response);
+          sessionStorage.setItem(
+            "currentStudentGeneralData",
+            JSON.stringify(response)
+          );
+          updateUItoDefault();
+          console.log(response);
+          resolve(response);
+        } else {
+          updateUItoDefault();
+          console.log(this.response);
+          reject(JSON.parse(this.response));
+        }
+      };
+
+      req.onerror = function () {
         updateUItoDefault();
         console.log(this.response);
-      }
-    };
-    req.onerror = function () {
-      updateUItoDefault();
-      console.log(this.response);
-    };
+        reject(JSON.parse(this.response));
+      };
 
-    req.send();
+      req.send();
+    });
   }
 
   let proceededBefore = false;
 
-  function handleProceed() {
+  async function handleProceed() {
     proceededBefore = true;
     let studentIdValidationResult = validateStudentId(studentIdInput.value);
     if (studentIdValidationResult) {
       clearUIError();
       updateUIonProceed();
-      checkForStudent();
+
+      try {
+        var response = await checkForStudentRequest();
+        console.log(response);
+        if (response.status == "NotPresent") {
+          computeFormToShow(firstStepContainer, "student-details");
+        }
+      } catch (error) {
+        console.error("Error checking for student request:", error);
+      }
     }
   }
 
@@ -122,11 +199,16 @@ const handleFirstStep = (() => {
   }
 
   return {
-    init: addEventListiners
+    init: addEventListiners,
+    getCurrentStudentId: function () {
+      return studentIdInput.value;
+    }
   };
 })();
 
 handleFirstStep.init();
+
+// handle student details
 
 const handleStudentDetailsStep = (() => {
   const studentDetailsStepContainer = document.querySelector(
@@ -207,10 +289,12 @@ const handleStudentDetailsStep = (() => {
     let errors = populateStudentDataError(data);
     populateStudentDataErrorMessageFields(errors);
     resetStudentDataErrorMessageFields(errors, data);
-    if (errors) {
+
+    if (Object.keys(errors).length === 0) {
+      return true;
+    } else {
       return false;
     }
-    return true;
   }
 
   function updateSingleDetailsFieldErrorMessage(
@@ -262,13 +346,59 @@ const handleStudentDetailsStep = (() => {
       resetSingleDetailsFieldErrorMessage(inputField, messageField);
     }
   }
+
+  function focusNextInputFieldOrSubmitOnEnter(inputField) {
+    const currentIndex = Array.from(studentDataInputFields).indexOf(inputField);
+    if (currentIndex < studentDataInputFields.length - 1) {
+      Array.from(studentDataInputFields)[currentIndex + 1].focus();
+    } else {
+      handleStudentDataProceed();
+    }
+  }
+
+  function convertInputDataToRequestBodyData(inputFields) {
+    let requestData = {};
+    inputFields.forEach((input) => {
+      const key = input.name.charAt(0).toUpperCase() + input.name.slice(1);
+      requestData[key] = input.value;
+    });
+    const id = getCurrentStudentId();
+    requestData["StudentId"] = id;
+    return requestData;
+  }
+
+  function submitStudentDetailsRequest(data) {
+    const req = new XMLHttpRequest();
+    const requestData = convertInputDataToRequestBodyData(data);
+    req.open("POST", `http://localhost:5239/student`, true);
+    req.setRequestHeader("Content-Type", "application/json");
+    req.onload = function () {
+      if (this.status == 200) {
+        let reponse = JSON.parse(this.response);
+        updateUItoDefault();
+        console.log(reponse);
+      } else {
+        updateUItoDefault();
+        console.log(this.response);
+      }
+    };
+    req.onerror = function () {
+      updateUItoDefault();
+      console.log(this.response);
+    };
+
+    req.send(JSON.stringify(requestData));
+  }
+
   let proceededBefore = false;
 
   function handleStudentDataProceed() {
     proceededBefore = true;
     updateUIonProceed();
     const isValidData = validateStudentDetails(studentDataInputFields);
-    if (!isValidData) {
+    if (isValidData) {
+      submitStudentDetailsRequest(studentDataInputFields);
+    } else {
       updateUItoDefault();
     }
   }
@@ -276,9 +406,18 @@ const handleStudentDetailsStep = (() => {
   function addEventListiners() {
     proceedButton.addEventListener("click", handleStudentDataProceed);
     studentDataInputFields.forEach((field) => {
-      field.addEventListener("input", (e) => {
+      field.addEventListener("input", (event) => {
         if (proceededBefore) {
-          validateSingleStudentDetailsField(field);
+          validateSingleStudentDetailsField(event.target);
+        }
+      });
+    });
+
+    studentDataInputFields.forEach((field) => {
+      field.addEventListener("keydown", (event) => {
+        if (event.key == "Enter") {
+          event.preventDefault();
+          focusNextInputFieldOrSubmitOnEnter(event.target);
         }
       });
     });

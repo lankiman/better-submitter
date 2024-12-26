@@ -25,10 +25,34 @@ body {
 .container {
   min-height: 50%;
   width: 50%;
+  overflow: hidden;
+  position: relative;
   padding: 2rem;
   border-radius: 0.5rem;
   box-shadow: var(--shadow-md);
   background-color: whitesmoke;
+}
+.container.change-form {
+  animation: slideMask 1s infinite linear;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.5) 1%,
+    black 50%,
+    rgba(0, 0, 0, 0.5) 99%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.5) 10%,
+    black 50%,
+    rgba(0, 0, 0, 0.5) 90%,
+    transparent 100%
+  );
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  opacity: 0.9;
 }
 
 .container h1 {
@@ -137,10 +161,23 @@ body {
 
 .form-step {
   display: none;
+  width: 100%;
+  height: auto;
+  position: absolute;
+  transition: all 1s ease-in-out;
 }
 
 .form-step.active {
   display: flex;
+  position: relative;
+}
+.form-step.slide-out {
+  position: absolute;
+  animation: slideOutLeft 0.5s forwards;
+}
+
+.form-step.slide-in {
+  animation: slideInRight 0.5s forwards;
 }
 
 /*First form step styles*/
@@ -174,6 +211,10 @@ body {
 
 .student-details-step .input-label {
   font-size: medium;
+}
+
+.student-details-step .loader {
+  margin-top: 1rem;
 }
 
 /*Animation Keyframes*/
@@ -227,6 +268,41 @@ body {
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+/* Add animations for form transitions */
+@keyframes slideOutLeft {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Mask Animation */
+@keyframes slideMask {
+  0% {
+    mask-position: 0% 0;
+    -webkit-mask-position: 0% 0;
+  }
+  100% {
+    mask-position: 100% 0;
+    -webkit-mask-position: 100% 0;
   }
 }
 
