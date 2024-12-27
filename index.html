@@ -157,13 +157,9 @@
 
     <!--Toast Container Template-->
     <template data-toast-template>
-      <div
-        data-tost-container
-        data-toast-type="success"
-        class="toast-container"
-      >
+      <div data-tost-container class="toast-container">
         <section data-message-type-icons class="toast-message-icons">
-          <span data-message-type-success class="toast-message-icon active">
+          <span data-toast-icon-type-success class="toast-message-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -179,7 +175,7 @@
               />
             </svg>
           </span>
-          <span data-message-type-error class="toast-message-icon">
+          <span data-toast-icon-type-error class="toast-message-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -195,7 +191,7 @@
               />
             </svg>
           </span>
-          <span data-message-type-info class="toast-message-icon">
+          <span data-toast-icon-type-info class="toast-message-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -233,7 +229,6 @@
         </section>
       </div>
     </template>
-
     <div data-toast-placeholder class="toast-placeholder"></div>
   </body>
 </html>

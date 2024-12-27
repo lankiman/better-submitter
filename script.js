@@ -26,6 +26,66 @@ function getCurrentStudentId() {
   return id;
 }
 
+function showToast(message, type) {
+  return handleToastMessage.displayToast(message, type);
+}
+
+//handle toast message
+
+const handleToastMessage = (() => {
+  const toastTemplate = document.querySelector("[data-toast-template]");
+  const toastPlaceholder = document.querySelector("[data-toast-placeholder]");
+
+  function displayToast(message, type) {
+    const toastTemplateContent = toastTemplate.content.cloneNode(true);
+    const toastMessageIcon = toastTemplateContent.querySelector(
+      `[data-toast-icon-type-${type}]`
+    );
+    const toastMessage = toastTemplateContent.querySelector(
+      "[data-toast-message]"
+    );
+    const toastCloseButton = toastTemplateContent.querySelector(
+      "[data-toast-close-button]"
+    );
+
+    toastMessageIcon.classList.add("active");
+    toastMessage.textContent = message;
+    toastPlaceholder.appendChild(toastTemplateContent);
+    const appendedToast = toastPlaceholder.lastElementChild;
+    appendedToast.dataset.toastType = type;
+    console.log(appendedToast);
+    appendedToast.classList.add("toast-in");
+
+    if (toastPlaceholder.children.length > 0) {
+      toastPlaceholder.classList.add("active");
+    }
+
+    toastCloseButton.addEventListener("click", () => {
+      appendedToast.classList.remove("toast-in");
+      appendedToast.classList.add("toast-out");
+      toastPlaceholder.removeChild(appendedToast);
+      if (toastPlaceholder.children.length < 1) {
+        toastPlaceholder.classList.remove("active");
+      }
+    });
+
+    setTimeout(() => {
+      appendedToast.classList.remove("toast-in");
+      appendedToast.classList.add("toast-out");
+      appendedToast.addEventListener("animationend", () => {
+        toastPlaceholder.removeChild(appendedToast);
+        if (toastPlaceholder.children.length < 1) {
+          toastPlaceholder.classList.remove("active");
+        }
+      });
+    }, 4000);
+  }
+
+  return {
+    displayToast: displayToast
+  };
+})();
+
 //handle first step
 
 const handleFirstStep = (() => {
@@ -382,6 +442,11 @@ const handleStudentDetailsStep = (() => {
         let reponse = JSON.parse(this.response);
         updateUItoDefault();
         console.log(reponse);
+        if (reponse.status == "Present") {
+          showToast(reponse.message, "info");
+        } else {
+          showToast(reponse.message, "success");
+        }
       } else {
         updateUItoDefault();
         console.log(this.response);
@@ -433,19 +498,3 @@ const handleStudentDetailsStep = (() => {
 })();
 
 handleStudentDetailsStep.init();
-
-const handleToastMessage = (() => {
-  const toastTemplate = document.querySelector("[data-toast-template]");
-  const toastPlaceholder = document.querySelector("[data-toast-placeholder]");
-
-  function displayToast(message, type) {
-    const toastTemplateContent = toastTemplate.content.cloneNode(true);
-    const toastMessage = toastTemplateContent.querySelector(
-      "[data-toast-message]"
-    );
-  }
-
-  return {
-    displayToast: displayToast
-  };
-})();
