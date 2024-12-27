@@ -1,5 +1,10 @@
 //Globals
 
+const API_BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5239"
+    : `http://${window.location.hostname}:5239`;
+
 //general funcions
 function computeFormToShow(hide, show) {
   const formToShow = document.querySelector(`[data-step-${show}]`);
@@ -131,7 +136,7 @@ const handleFirstStep = (() => {
       const req = new XMLHttpRequest();
       req.open(
         "GET",
-        `http://localhost:5239/student/?studentId=${studentIdInput.value}`,
+        `${API_BASE_URL}/student/?studentId=${studentIdInput.value}`,
         true
       );
 
@@ -370,7 +375,7 @@ const handleStudentDetailsStep = (() => {
   function submitStudentDetailsRequest(data) {
     const req = new XMLHttpRequest();
     const requestData = convertInputDataToRequestBodyData(data);
-    req.open("POST", `http://localhost:5239/student`, true);
+    req.open("POST", `${API_BASE_URL}/student`, true);
     req.setRequestHeader("Content-Type", "application/json");
     req.onload = function () {
       if (this.status == 200) {
@@ -428,3 +433,19 @@ const handleStudentDetailsStep = (() => {
 })();
 
 handleStudentDetailsStep.init();
+
+const handleToastMessage = (() => {
+  const toastTemplate = document.querySelector("[data-toast-template]");
+  const toastPlaceholder = document.querySelector("[data-toast-placeholder]");
+
+  function displayToast(message, type) {
+    const toastTemplateContent = toastTemplate.content.cloneNode(true);
+    const toastMessage = toastTemplateContent.querySelector(
+      "[data-toast-message]"
+    );
+  }
+
+  return {
+    displayToast: displayToast
+  };
+})();

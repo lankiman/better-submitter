@@ -180,6 +180,82 @@ body {
   animation: slideInRight 0.5s forwards;
 }
 
+/* Toast Message Styels */
+
+.toast-placeholder {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  position: absolute;
+  top: 2rem;
+  right: 1rem;
+  padding: 1rem;
+  min-width: 22rem;
+  height: auto;
+  transition: height 0.3s ease;
+}
+
+.toast-placeholder.active {
+  display: flex;
+}
+
+.toast-container {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 1rem;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  border-radius: 1rem;
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  /* box-shadow: var(--shadow-md); */
+}
+.toast-container.active {
+  animation: toastIn 1s ease forwards;
+}
+
+.toast-container[data-toast-type="success"] {
+  background: rgba(34, 197, 94, 0.25); /* green */
+}
+
+.toast-container[data-toast-type="error"] {
+  background: rgba(239, 68, 68, 0.25); /* red */
+}
+
+.toast-container[data-toast-type="info"] {
+  background: rgba(59, 130, 246, 0.25); /* blue */
+}
+.toast-message-section {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toast-close-button {
+  width: 1.5rem;
+  height: 1.5rem;
+  cursor: pointer;
+}
+
+.toast-message-icon {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.toast-message-icon.active {
+  display: block;
+}
+
 /*First form step styles*/
 
 .first-step {
@@ -218,6 +294,31 @@ body {
 }
 
 /*Animation Keyframes*/
+
+/*Animation for Toast*/
+@keyframes toastIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+}
+
+/*Other Animations*/
 
 @keyframes spin {
   0% {
@@ -323,4 +424,10 @@ body {
     display: flex !important;
     flex-direction: column;
   }
+
+  /* .toast-placeholder {
+    width: 100%;
+    right: 0%;
+    left: 0%;
+  } */
 }
