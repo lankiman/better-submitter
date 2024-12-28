@@ -24,6 +24,8 @@ body {
 
 .container {
   min-height: 50%;
+  /* max-height: 9999px; */
+  overflow: hidden;
   width: 50%;
   overflow: hidden;
   position: relative;
@@ -31,6 +33,7 @@ body {
   border-radius: 0.5rem;
   box-shadow: var(--shadow-md);
   background-color: whitesmoke;
+  transition: all 0.5s ease-out;
 }
 .container.change-form {
   animation: slideMask 1s infinite linear;
@@ -101,7 +104,8 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-.proceed-btn {
+.proceed-btn,
+.back-btn {
   width: fit-content;
   font-size: larger;
   color: white;
@@ -114,7 +118,25 @@ body {
   border: 2px solid gray;
   transition: all 0.3s ease;
 }
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: black;
+  background-color: white;
+  outline: none;
+  border: none;
+  margin-bottom: 1rem;
+}
 
+.back-btn:hover:not(:disabled) {
+  background-color: black;
+  color: white;
+}
+.back-btn svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
 .proceed-btn:hover:not(:disabled) {
   background-color: white;
   color: black;
@@ -172,12 +194,23 @@ body {
   position: relative;
 }
 .form-step.slide-out {
+  left: 1rem;
   position: absolute;
   animation: slideOutLeft 0.5s forwards;
 }
 
 .form-step.slide-in {
   animation: slideInRight 0.5s forwards;
+}
+
+.form-step.slide-out-right {
+  animation: slideOutRight 0.5s forwards;
+}
+
+.form-step.slide-in-left {
+  position: absolute;
+  margin-right: 1rem;
+  animation: slideInLeft 0.5s forwards;
 }
 
 /* Toast Message Styels */
@@ -193,15 +226,13 @@ body {
   right: 1rem;
   padding: 1rem;
   min-width: 22rem;
-  /* min-height: 20px; */
-  max-height: 0;
+  min-height: fit-content;
   overflow: hidden;
   transition: all 0.5s ease;
 }
 
 .toast-placeholder.active {
   display: flex;
-  max-height: 1000px;
 }
 
 .toast-container {
@@ -214,7 +245,9 @@ body {
   border-radius: 1rem;
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  box-shadow: 0 2px 32px 0 rgba(31, 38, 135, 0.37);
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); */
+
   transition: opacity 0.3s ease, transform 0.5s ease;
   /* box-shadow: var(--shadow-md); */
 }
@@ -403,6 +436,28 @@ body {
   100% {
     transform: translateX(0);
     opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  0% {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
   }
 }
 

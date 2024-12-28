@@ -6,19 +6,90 @@ const API_BASE_URL =
     : `http://${window.location.hostname}:5239`;
 
 //general funcions
-function computeFormToShow(hide, show) {
+// function computeFormToShow(hide, show, direction) {
+//   const formToShow = document.querySelector(`[data-step-${show}]`);
+//   const generalContainer = document.querySelector("[data-container]");
+//   generalContainer.classList.add("change-form");
+//   formToShow.classList.add("active");
+//   if (direction == "next") {
+//     hide.classList.add("slide-out");
+//     formToShow.classList.add("slide-in");
+//     hide.addEventListener("animationend", () => {
+//       hide.classList.remove("active");
+//       hide.classList.remove("slide-out");
+//       formToShow.classList.remove("slide-in");
+//       generalContainer.classList.remove("change-form");
+//     });
+//   }
+//   if (direction == "prev") {
+//     hide.classList.add("slide-out-right");
+//     formToShow.classList.add("slide-in-left");
+//     hide.addEventListener("animationend", () => {
+//       hide.classList.remove("active");
+//       hide.classList.remove("slide-out-right");
+//       formToShow.classList.remove("slide-in-left");
+//       generalContainer.classList.remove("change-form");
+//     });
+//   }
+// }
+
+const generalHandler = (() => {
+  const generalContainer = document.querySelector("[data-container]");
+
+  const dynamicContent = generalContainer.lastElementChild;
+  const staticContent = generalContainer.firstElementChild;
+
+  // Function to calculate the total height (static + dynamic)
+  function getTotalHeight() {
+    // Static height: including header, footer, and any padding/borders
+    const staticHeight =
+      staticContent.offsetHeight +
+      parseFloat(window.getComputedStyle(generalContainer).paddingTop) +
+      parseFloat(window.getComputedStyle(generalContainer).paddingBottom);
+
+    // Dynamic height: height of the content that changes
+    const dynamicHeight = dynamicContent.scrollHeight;
+
+    // Return the total height (static + dynamic)
+    return staticHeight + dynamicHeight;
+  }
+
+  const resizeObserver = new ResizeObserver(() => {
+    const totalHeight = getTotalHeight();
+    generalContainer.style.height = `${totalHeight}px`; // Update max-height based on the total height
+  });
+
+  resizeObserver.observe(dynamicContent);
+})();
+
+function computeFormToShow(hide, show, direction) {
   const formToShow = document.querySelector(`[data-step-${show}]`);
   const generalContainer = document.querySelector("[data-container]");
   generalContainer.classList.add("change-form");
   formToShow.classList.add("active");
-  hide.classList.add("slide-out");
-  formToShow.classList.add("slide-in");
-  hide.addEventListener("animationend", () => {
-    hide.classList.remove("active");
-    hide.classList.remove("slide-out");
-    formToShow.classList.remove("slide-in");
+  // generalContainer.style.height = `${formToShow.scrollHeight * 1.4}px`;
+
+  const animationEndHandler = () => {
+    hide.classList.remove(
+      "active",
+      direction === "next" ? "slide-out" : "slide-out-right"
+    );
+    formToShow.classList.remove(
+      direction === "next" ? "slide-in" : "slide-in-left"
+    );
     generalContainer.classList.remove("change-form");
-  });
+    hide.removeEventListener("animationend", animationEndHandler);
+  };
+
+  if (direction === "next") {
+    hide.classList.add("slide-out");
+    formToShow.classList.add("slide-in");
+    hide.addEventListener("animationend", animationEndHandler);
+  } else if (direction === "prev") {
+    hide.classList.add("slide-out-right");
+    formToShow.classList.add("slide-in-left");
+    hide.addEventListener("animationend", animationEndHandler);
+  }
 }
 
 function getCurrentStudentId() {
@@ -32,9 +103,92 @@ function showToast(message, type) {
 
 //handle toast message
 
+// const handleToastMessage = (() => {
+//   const toastTemplate = document.querySelector("[data-toast-template]");
+//   const toastPlaceholder = document.querySelector("[data-toast-placeholder]");
+
+//   function updateToastContainerHeight() {
+//     let totalHeight = 0;
+//     Array.from(toastPlaceholder.children).forEach((toast) => {
+//       totalHeight += toast.offsetHeight;
+//     });
+//     toastPlaceholder.style.height = `${totalHeight}px`;
+//   }
+
+//   function displayToast(message, type) {
+//     const toastTemplateContent = toastTemplate.content.cloneNode(true);
+//     const toastMessageIcon = toastTemplateContent.querySelector(
+//       `[data-toast-icon-type-${type}]`
+//     );
+//     const toastMessage = toastTemplateContent.querySelector(
+//       "[data-toast-message]"
+//     );
+//     const toastCloseButton = toastTemplateContent.querySelector(
+//       "[data-toast-close-button]"
+//     );
+
+//     toastMessageIcon.classList.add("active");
+//     toastMessage.textContent = message;
+//     toastPlaceholder.appendChild(toastTemplateContent);
+//     const appendedToast = toastPlaceholder.lastElementChild;
+//     appendedToast.dataset.toastType = type;
+//     console.log(appendedToast);
+//     appendedToast.classList.add("toast-in");
+
+//     if (toastPlaceholder.children.length > 0) {
+//       toastPlaceholder.classList.add("active");
+//     }
+
+//     updateToastContainerHeight();
+
+//     toastCloseButton.addEventListener("click", () => {
+//       appendedToast.classList.remove("toast-in");
+//       appendedToast.classList.add("toast-out");
+//       appendedToast.addEventListener(
+//         "animationend",
+//         () => {
+//           toastPlaceholder.removeChild(appendedToast);
+//           updateToastContainerHeight();
+//           if (toastPlaceholder.children.length < 1) {
+//             toastPlaceholder.classList.remove("active");
+//           }
+//         },
+//         { once: true }
+//       );
+//     });
+
+//     setTimeout(() => {
+//       appendedToast.classList.remove("toast-in");
+//       appendedToast.classList.add("toast-out");
+//       appendedToast.addEventListener("animationend", () => {
+//         toastPlaceholder.removeChild(appendedToast);
+//         updateToastContainerHeight();
+//         if (toastPlaceholder.children.length < 1) {
+//           toastPlaceholder.classList.remove("active");
+//         }
+//       });
+//     }, 4000);
+//   }
+
+//   return {
+//     displayToast: displayToast
+//   };
+// })();
+
 const handleToastMessage = (() => {
   const toastTemplate = document.querySelector("[data-toast-template]");
   const toastPlaceholder = document.querySelector("[data-toast-placeholder]");
+
+  function updateToastContainerHeight() {
+    // Calculate the total height of all toasts in the container
+    let totalHeight = 0;
+    Array.from(toastPlaceholder.children).forEach((toast) => {
+      totalHeight += toast.offsetHeight;
+    });
+
+    // Update the height of the toastPlaceholder to fit the total height of all toasts
+    toastPlaceholder.style.height = `${totalHeight}px`;
+  }
 
   function displayToast(message, type) {
     const toastTemplateContent = toastTemplate.content.cloneNode(true);
@@ -53,36 +207,46 @@ const handleToastMessage = (() => {
     toastPlaceholder.appendChild(toastTemplateContent);
     const appendedToast = toastPlaceholder.lastElementChild;
     appendedToast.dataset.toastType = type;
-    console.log(appendedToast);
     appendedToast.classList.add("toast-in");
 
     if (toastPlaceholder.children.length > 0) {
       toastPlaceholder.classList.add("active");
     }
 
+    // Update the container height after adding a toast
+    updateToastContainerHeight();
+
+    // Handle close button click
     toastCloseButton.addEventListener("click", () => {
-      appendedToast.classList.remove("toast-in");
-      appendedToast.classList.add("toast-out");
-      toastPlaceholder.removeChild(appendedToast);
-      if (toastPlaceholder.children.length < 1) {
-        toastPlaceholder.classList.remove("active");
-      }
+      closeToast(appendedToast);
     });
 
+    // Auto-remove after 4 seconds
     setTimeout(() => {
-      appendedToast.classList.remove("toast-in");
-      appendedToast.classList.add("toast-out");
-      appendedToast.addEventListener("animationend", () => {
-        toastPlaceholder.removeChild(appendedToast);
-        if (toastPlaceholder.children.length < 1) {
-          toastPlaceholder.classList.remove("active");
-        }
-      });
+      closeToast(appendedToast);
     }, 4000);
   }
 
+  function closeToast(toast) {
+    toast.classList.remove("toast-in");
+    toast.classList.add("toast-out");
+
+    // Use animationend event to remove the toast after the animation completes
+    toast.addEventListener(
+      "animationend",
+      () => {
+        toastPlaceholder.removeChild(toast);
+        updateToastContainerHeight(); // Update height after toast is removed
+        if (toastPlaceholder.children.length < 1) {
+          toastPlaceholder.classList.remove("active");
+        }
+      },
+      { once: true }
+    );
+  }
+
   return {
-    displayToast: displayToast
+    displayToast
   };
 })();
 
@@ -240,7 +404,7 @@ const handleFirstStep = (() => {
         var response = await checkForStudentRequest();
         console.log(response);
         if (response.status == "NotPresent") {
-          computeFormToShow(firstStepContainer, "student-details");
+          computeFormToShow(firstStepContainer, "student-details", "next");
         }
       } catch (error) {
         console.error("Error checking for student request:", error);
@@ -286,11 +450,15 @@ const handleStudentDetailsStep = (() => {
     "[data-spinner-section]"
   );
 
+  const backButton =
+    studentDetailsStepContainer.querySelector("[data-back-button]");
+
   const studentDataInputFields =
     studentDetailsStepContainer.querySelectorAll(".text-input");
 
   function updateUIonProceed() {
     proceedButton.setAttribute("disabled", "true");
+
     spinnerSection.classList.add("active");
   }
   function updateUItoDefault() {
@@ -490,6 +658,9 @@ const handleStudentDetailsStep = (() => {
           focusNextInputFieldOrSubmitOnEnter(event.target);
         }
       });
+    });
+    backButton.addEventListener("click", () => {
+      computeFormToShow(studentDetailsStepContainer, "first", "prev");
     });
   }
   return {
