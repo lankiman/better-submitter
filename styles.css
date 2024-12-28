@@ -33,7 +33,7 @@ body {
   border-radius: 0.5rem;
   box-shadow: var(--shadow-md);
   background-color: whitesmoke;
-  transition: all 0.5s ease-out;
+  transition: height 0.5s ease-out;
 }
 .container.change-form {
   animation: slideMask 1s infinite linear;
@@ -81,6 +81,71 @@ body {
   animation: rainbow 10s linear infinite;
 }
 
+.dialog-modal {
+  min-width: 30%;
+  max-width: 50%;
+  height: 10rem;
+  position: absolute;
+  box-shadow: var(--shadow-md);
+  border-radius: 1rem;
+  border: none;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s ease-in-out;
+}
+
+.dialog-modal[open] {
+  display: flex;
+}
+
+.dialog-modal.toast-in {
+  animation: toastIn 0.3s ease forwards;
+}
+.dialog-modal.toast-out {
+  animation: toastOut 0.3s ease forwards;
+}
+
+.dialog-buttons {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 1rem;
+}
+.dialog-button {
+  width: fit-content;
+  padding: 0.5rem 1rem;
+  box-shadow: var(--shadow-md);
+  font-size: medium;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: color 0.3s ease-in-out;
+}
+
+.dialog-confirm-button {
+  background-color: black;
+  color: white;
+}
+
+.dialog-confirm-button:hover {
+  background-color: white;
+  color: black;
+}
+
+.dialog-cancel-button:hover {
+  background-color: black;
+  color: white;
+}
+.dialog-modal::backdrop {
+  background-color: black;
+  opacity: 0.5;
+  transition: all 0.3 ease-in-out;
+}
+.dialog-message {
+  font-weight: 500;
+  font-size: medium;
+}
+
 /*General form components styles*/
 
 .input-label {
@@ -104,6 +169,7 @@ body {
   box-shadow: var(--shadow-md);
 }
 
+/* .btn, */
 .proceed-btn,
 .back-btn {
   width: fit-content;
@@ -120,8 +186,9 @@ body {
 }
 .back-btn {
   display: flex;
+  height: fit-content;
   align-items: center;
-  gap: 1rem;
+  padding: 0.5rem 1.5rem;
   color: black;
   background-color: white;
   outline: none;
@@ -337,6 +404,25 @@ body {
   margin-top: 1rem;
 }
 
+/*Choose Course form styles*/
+
+.choose-course-step {
+  flex-direction: column;
+}
+
+.choose-course-step .course-form-student-name {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.choose-course-step .course-choice-dropdown {
+  height: 3rem;
+  width: 60%;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-md);
+}
+
 /*Animation Keyframes*/
 
 /*Animation for Toast*/
@@ -497,5 +583,14 @@ body {
   }
   .toast-container {
     width: 95%;
+  }
+
+  .dialog-modal {
+    min-width: 65%;
+    max-width: 75%;
+  }
+
+  .choose-course-step .course-choice-dropdown {
+    width: 100%;
   }
 }

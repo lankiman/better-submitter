@@ -17,7 +17,7 @@
         <div
           data-step-first
           data-step-1
-          class="form-step active first-step"
+          class="form-step first-step"
           id="first-step"
         >
           <label for="studentId-input"
@@ -52,39 +52,25 @@
           class="form-step student-details-step"
           id="student-details-step"
         >
+          <button data-back-button type="button" class="btn back-btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061A1.125 1.125 0 0 1 21 8.689v8.122ZM11.25 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061a1.125 1.125 0 0 1 1.683.977v8.122Z"
+              />
+            </svg>
+          </button>
           <section
             class="input-section firstname-input-section student-details-step-input-section"
           >
-            <button data-back-button type="button" class="btn back-btn">
-              <!-- <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-6"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
-                />
-              </svg> -->
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-6"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061A1.125 1.125 0 0 1 21 8.689v8.122ZM11.25 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061a1.125 1.125 0 0 1 1.683.977v8.122Z"
-                />
-              </svg>
-            </button>
             <label class="input-label" for="firstname-input">Firstname</label>
             <span
               data-student-details-error-message-field
@@ -182,6 +168,65 @@
             </section>
           </section>
         </div>
+
+        <!--Third Form Step, shows only for electrical, choosing assignment to submit-->
+        <div
+          data-step-choose-course
+          data-step-3
+          class="form-step active choose-course-step"
+          id="choose-course-step"
+        >
+          <button data-back-button type="button" class="btn back-btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061A1.125 1.125 0 0 1 21 8.689v8.122ZM11.25 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061a1.125 1.125 0 0 1 1.683.977v8.122Z"
+              />
+            </svg>
+          </button>
+          <h3 data-course-student-name class="course-form-student-name">
+            Welcome
+          </h3>
+          <p class="course-form-question">
+            Which assigment would you like to submit
+          </p>
+          <span
+            data-choose-course-error-message-field
+            data-error-course
+            class="error-course text-error-message"
+            id="course-error-field"
+          ></span>
+          <section data-course-choice-section>
+            <select
+              data-course-choice-dropdown
+              class="course-choice-dropdown"
+              name="course"
+              id="course-input"
+            >
+              <option value="">Please choose a course</option>
+              <option value="C">C(DSA)</option>
+              <option value="Python">Python</option>
+              <option value="Java">Java</option>
+            </select>
+          </section>
+          <section>
+            <button data-proceed-btn class="btn proceed-btn" type="button">
+              Proceed
+            </button>
+            <section data-spinner-section class="loader">
+              <span class="spinner"></span>
+              <p>please wait....</p>
+            </section>
+          </section>
+        </div>
       </form>
     </main>
 
@@ -260,5 +305,23 @@
       </div>
     </template>
     <div data-toast-placeholder class="toast-placeholder"></div>
+    <dialog data-dialog-modal class="dialog-modal">
+      <p data-dailog-message class="dialog-message"></p>
+      <section class="dialog-buttons" data-dialog-buttons>
+        <button
+          data-dialog-cancel-button
+          class="btn dialog-button dialog-cancel-button"
+        >
+          Cancel
+        </button>
+        <button
+          data-dialog-confirm-button
+          class="btn dialog-button dialog-confirm-button"
+          autofocus
+        >
+          Confirm
+        </button>
+      </section>
+    </dialog>
   </body>
 </html>

@@ -33,6 +33,54 @@ const API_BASE_URL =
 //   }
 // }
 
+const dialogModalHandler = (() => {
+  const dialogModal = document.querySelector("[data-dialog-modal]");
+  const dialogMessage = dialogModal.querySelector("[data-dailog-message]");
+  const dialogCancelButton = dialogModal.querySelector(
+    "[data-dialog-cancel-button]"
+  );
+  const dialogConfirmButton = dialogModal.querySelector(
+    "[data-dialog-confirm-button]"
+  );
+
+  function closeDialog() {
+    dialogModal.classList.remove("toast-in");
+    dialogModal.classList.add("toast-out");
+    dialogModal.addEventListener(
+      "animationend",
+      () => {
+        dialogModal.close();
+      },
+      { once: true }
+    );
+  }
+
+  function initializeEventListiners() {
+    dialogCancelButton.addEventListener("click", closeDialog);
+  }
+
+  function displayDialog(message, action) {
+    dialogModal.classList.remove("toast-out");
+    dialogModal.classList.add("toast-in");
+    dialogModal.showModal();
+    dialogMessage.textContent = message;
+    dialogConfirmButton.addEventListener(
+      "click",
+      () => {
+        action();
+        closeDialog();
+      },
+      { once: true }
+    );
+  }
+
+  return {
+    init: initializeEventListiners,
+    showDialog: displayDialog
+  };
+})();
+dialogModalHandler.init();
+
 const generalHandler = (() => {
   const generalContainer = document.querySelector("[data-container]");
 
@@ -61,6 +109,10 @@ const generalHandler = (() => {
 
   resizeObserver.observe(dynamicContent);
 })();
+
+function showDialog(message, action) {
+  dialogModalHandler.showDialog(message, action);
+}
 
 function computeFormToShow(hide, show, direction) {
   const formToShow = document.querySelector(`[data-step-${show}]`);
@@ -629,15 +681,25 @@ const handleStudentDetailsStep = (() => {
   }
 
   let proceededBefore = false;
+  let dialogShownBefore = false;
+
+  function handleSubmissionConfirm() {
+    updateUIonProceed();
+    submitStudentDetailsRequest(studentDataInputFields);
+    dialogShownBefore = true;
+  }
 
   function handleStudentDataProceed() {
     proceededBefore = true;
-    updateUIonProceed();
     const isValidData = validateStudentDetails(studentDataInputFields);
-    if (isValidData) {
-      submitStudentDetailsRequest(studentDataInputFields);
-    } else {
-      updateUItoDefault();
+    if (isValidData && dialogShownBefore == false) {
+      showDialog(
+        "Please make sure entered data is correct before proceeding, data once submitted cannot be updated",
+        handleSubmissionConfirm
+      );
+    }
+    if (isValidData && dialogShownBefore == true) {
+      handleSubmissionConfirm();
     }
   }
 
@@ -660,7 +722,10 @@ const handleStudentDetailsStep = (() => {
       });
     });
     backButton.addEventListener("click", () => {
+      dialogShownBefore = false;
+      proceededBefore = false;
       computeFormToShow(studentDetailsStepContainer, "first", "prev");
+      resetStudentDataErrorMessageFields({}, studentDataInputFields);
     });
   }
   return {
@@ -669,3 +734,80 @@ const handleStudentDetailsStep = (() => {
 })();
 
 handleStudentDetailsStep.init();
+[];
+
+//choose course form step logic
+
+const handleChooseCourseStep = (() => {
+  const chooseCourseStepContainer = document.querySelector(
+    "[data-step-choose-course]"
+  );
+  const backButton =
+    chooseCourseStepContainer.querySelector("[data-back-button]");
+
+  const studentNameHeader = chooseCourseStepContainer.querySelector(
+    "[data-course-student-name]"
+  );
+
+  const chooseCourseErrorMessageField = chooseCourseStepContainer.querySelector(
+    "[data-error-course]"
+  );
+
+  const chooseCourseDropdown = chooseCourseStepContainer.querySelector(
+    "[data-course-choice-dropdown]"
+  );
+
+  const proceedButton = chooseCourseStepContainer.querySelector(
+    "[data-proceed-button]"
+  );
+
+  const spinnerSection = chooseCourseStepContainer.querySelector(
+    "[data-spinner-section]"
+  );
+
+  function getCourseAssignmentMetadata(requestData) {
+    return new Promise((resolve, reject) => {
+      const req = new XMLHttpRequest();
+      req.open(
+        "GET",
+        `${API_BASE_URL}/?studentId=${requestData.studentId}?assigmentType=${requestData.assignmentType}`,
+        true
+      );
+
+      req.onload = function () {
+        if (this.response.status == 200) {
+          console.log(this.response);
+          resolve(JSON.parse(this.response));
+        } else {
+          console.log(this.response);
+          reject(JSON.parse(this.response));
+        }
+      };
+      req.onerror = function () {
+        console.log(this.response);
+        reject(JSON.parse(this.response));
+      };
+    });
+  }
+
+  function computeRequestData(value) {
+    let requestData = {};
+    requestData["studentId"] = getCurrentStudentId();
+    requestData["assignmentType"] = value;
+    return requestData;
+  }
+
+  function validateChooseCourseDropdown(value) {
+    if (value == "") {
+      chooseCourseErrorMessageField.classList.add("active");
+      chooseCourseErrorMessageField.textContent = "Please choose a course";
+      chooseCourseDropdown.classList.add("input-error-active");
+      return false;
+    } else {
+      chooseCourseErrorMessageField.classList.remove("active");
+      chooseCourseErrorMessageField.textContent = "";
+      chooseCourseDropdown.classList.remove("input-error-active");
+      return true;
+    }
+  }
+})();
