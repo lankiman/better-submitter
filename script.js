@@ -153,6 +153,27 @@ function showToast(message, type) {
   return handleToastMessage.displayToast(message, type);
 }
 
+function getCourseAssignmentMetadata(assigmentType) {
+  const studentId = getCurrentStudentId();
+  let requestData = {};
+  requestData["studentId"] = getCurrentStudentId();
+  requestData["assignmentType"] = assigmentType;
+
+  try {
+    const response =
+      handleChooseCourseStep.getCourseAssignmentMetadata(requestData);
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.log("error while getting assigment metada", error);
+    showToast("An error occured", "error");
+  }
+}
+
+function getFetchedAssignmentMetadata() {
+  return handleChooseCourseStep.assignmentMetadata;
+}
+
 //handle toast message
 
 // const handleToastMessage = (() => {
@@ -358,55 +379,6 @@ const handleFirstStep = (() => {
     return true;
   }
 
-  //   function checkForStudentReqeust() {
-  //     const req = new XMLHttpRequest();
-  //     req.open(
-  //       "GET",
-  //       `http://localhost:5239/student/?studentId=${studentIdInput.value}`,
-  //       true
-  //     );
-
-  //     req.onload = function () {
-  //       if (this.status == 200) {
-  //         let response = JSON.parse(this.response);
-  //         sessionStorage.setItem(
-  //           "currentStudentGeneralData",
-  //           JSON.stringify(this.response)
-  //         );
-  //         updateUItoDefault();
-  //         console.log(response);
-  //         return response;
-  //       } else {
-  //         updateUItoDefault();
-  //         console.log(this.response);
-  //         return JSON.parse(this.response);
-  //       }
-  //     };
-  //     req.onerror = function () {
-  //       updateUItoDefault();
-  //       console.log(this.response);
-  //       return JSON.parse(this.response);
-  //     };
-
-  //     req.send();
-  //   }
-
-  //   let proceededBefore = false;
-
-  //   async function handleProceed() {
-  //     proceededBefore = true;
-  //     let studentIdValidationResult = validateStudentId(studentIdInput.value);
-  //     if (studentIdValidationResult) {
-  //       clearUIError();
-  //       updateUIonProceed();
-  //       var response = await checkForStudentReqeust();
-  //       console.log(response);
-  //       if (response.status == "NotPresent") {
-  //         computeFormToShow(firstStepContainer, "student-details");
-  //       }
-  //     }
-  //   }
-
   function checkForStudentRequest() {
     return new Promise((resolve, reject) => {
       const req = new XMLHttpRequest();
@@ -510,7 +482,6 @@ const handleStudentDetailsStep = (() => {
 
   function updateUIonProceed() {
     proceedButton.setAttribute("disabled", "true");
-
     spinnerSection.classList.add("active");
   }
   function updateUItoDefault() {
@@ -757,13 +728,21 @@ const handleChooseCourseStep = (() => {
     "[data-course-choice-dropdown]"
   );
 
-  const proceedButton = chooseCourseStepContainer.querySelector(
-    "[data-proceed-button]"
-  );
+  const proceedButton =
+    chooseCourseStepContainer.querySelector("[data-proceed-btn]");
 
   const spinnerSection = chooseCourseStepContainer.querySelector(
     "[data-spinner-section]"
   );
+
+  function updateUIonProceed() {
+    proceedButton.setAttribute("disabled", "true");
+    spinnerSection.classList.add("active");
+  }
+  function updateUItoDefault() {
+    proceedButton.removeAttribute("disabled");
+    spinnerSection.classList.remove("active");
+  }
 
   function getCourseAssignmentMetadata(requestData) {
     return new Promise((resolve, reject) => {
@@ -790,6 +769,8 @@ const handleChooseCourseStep = (() => {
     });
   }
 
+  let proceededBefore = false;
+
   function computeRequestData(value) {
     let requestData = {};
     requestData["studentId"] = getCurrentStudentId();
@@ -810,4 +791,44 @@ const handleChooseCourseStep = (() => {
       return true;
     }
   }
+
+  const assignmentMetadata = {};
+
+  async function handleChooseCourseProceed(value) {
+    proceededBefore = true;
+    const isValidChoice = validateChooseCourseDropdown(value);
+    if (isValidChoice) {
+      updateUIonProceed();
+      try {
+        const requestData = computeRequestData(value);
+        const response = await getCourseAssignmentMetadata(requestData);
+        assignmentMetadata = response;
+        proceededBefore = false;
+        updateUItoDefault();
+      } catch (error) {
+        console.log("error fetching an assignment data", error);
+        showToast("An error eccured", "error");
+      }
+    }
+  }
+
+  function initializeEventListiners() {
+    proceedButton.addEventListener("click", () =>
+      handleChooseCourseProceed(chooseCourseDropdown.value)
+    );
+
+    chooseCourseDropdown.addEventListener("input", (event) => {
+      if (proceededBefore) {
+        validateChooseCourseDropdown(event.target.value);
+      }
+    });
+  }
+
+  return {
+    init: initializeEventListiners,
+    getCourseAssignmentMetadata: getCourseAssignmentMetadata,
+    assignmentMetadata: assignmentMetadata
+  };
 })();
+
+handleChooseCourseStep.init();

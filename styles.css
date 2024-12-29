@@ -176,6 +176,7 @@ body {
   font-size: larger;
   color: white;
   border-radius: 0.5rem;
+  margin-bottom: 1rem;
   cursor: pointer;
   font-weight: 800;
   padding: 0.5rem 2rem;
@@ -420,6 +421,7 @@ body {
   width: 60%;
   font-weight: bold;
   margin-bottom: 1rem;
+  margin-top: 1rem;
   box-shadow: var(--shadow-md);
 }
 
