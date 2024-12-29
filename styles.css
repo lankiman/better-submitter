@@ -60,7 +60,7 @@ body {
 
 .container h1 {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   font-weight: 900;
   background: linear-gradient(
     45deg,
@@ -377,11 +377,16 @@ body {
 
 /*Student details form step styles*/
 
-.student-details-step.active {
-  display: grid !important;
-  grid-template-rows: repeat(3, auto);
+.student-details-step {
+  flex-direction: column;
+}
+
+.student-details-step .student-details-step-container {
+  display: grid;
+  grid-template-rows: repeat(2, auto);
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .student-details-step .input-section {
@@ -425,7 +430,49 @@ body {
   box-shadow: var(--shadow-md);
 }
 
+/*Upload file form step styles*/
+
+.file-upload-step {
+  flex-direction: column;
+}
+
+.file-upload-step .upload-student-name {
+  font-weight: 900;
+  background: linear-gradient(
+    45deg,
+    #334155,
+    /* slate-700 - professional gray-blue */ #475569,
+    /* slate-600 - medium gray */ #64748b,
+    /* slate-500 - lighter gray */ #475569,
+    /* slate-600 */ #334155 /* slate-700 */
+  );
+  background-size: 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: softGradient 4s ease-in-out infinite;
+}
+
+.file-upload-step h4 {
+  margin-top: 0.1rem;
+  margin-bottom: 0.5rem;
+}
+
 /*Animation Keyframes*/
+
+/*Animation for file upload*/
+
+@keyframes softGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
 
 /*Animation for Toast*/
 @keyframes toastIn {
@@ -573,9 +620,12 @@ body {
   .container form label {
     font-size: medium;
   }
+  .container h1 {
+    font-size: larger;
+  }
 
-  .student-details-step.active {
-    display: flex !important;
+  .student-details-step .student-details-step-container {
+    display: flex;
     flex-direction: column;
   }
 

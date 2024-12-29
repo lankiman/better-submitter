@@ -68,96 +68,102 @@
               />
             </svg>
           </button>
-          <section
-            class="input-section firstname-input-section student-details-step-input-section"
-          >
-            <label class="input-label" for="firstname-input">Firstname</label>
-            <span
-              data-student-details-error-message-field
-              data-error-firstname
-              class="error-firstname text-error-message"
-              id="firstname-error-field"
-            ></span>
-            <input
-              data-input-firstname
-              class="text-input"
-              type="text"
-              name="firstname"
-              id="firstname-input"
-              placeholder="Enter Firstname"
-              required
-            />
-          </section>
-          <section
-            class="input-section surname-input-section student-details-step-input-section"
-          >
-            <label class="input-label" for="surname-input">Surname</label>
-            <span
-              data-student-details-error-message-field
-              data-error-surname
-              class="error-surname text-error-message"
-              id="surname-error-field"
-            ></span>
-            <input
-              data-input-surname
-              class="text-input"
-              type="text"
-              name="surname"
-              id="surname-input"
-              placeholder="Enter Surname"
-              required
-            />
-          </section>
-
-          <section
-            class="input-section middlename-input-section student-details-step-input-section"
-          >
-            <label class="input-label" for="middlename-input">Middlename</label>
-            <span
-              data-student-details-error-message-field
-              data-error-middlename
-              class="error-middlename text-error-message"
-              id="middlename-error-field"
-            ></span>
-            <input
-              data-input-surname
-              class="text-input"
-              type="text"
-              name="middlename"
-              id="middlename-input"
-              placeholder="Enter Middlename"
-            />
-          </section>
-
-          <section
-            class="input-section deparment-select-section deparment-input-section student-details-step-input-section"
-          >
-            <label class="input-label" for="department-input">Department</label>
-            <span
-              data-student-details-error-message-field
-              data-error-department
-              class="error-department text-error-message"
-              id="department-error-field"
-            ></span>
-            <select
-              data-input-department
-              data-select-deparment
-              class="text-input select-input"
-              type="text"
-              name="department"
-              id="department-input"
-              required
+          <div class="student-details-step-container">
+            <section
+              class="input-section firstname-input-section student-details-step-input-section"
             >
-              <option default value="">Select Department</option>
-              <option value="Agricultural">Agriculture</option>
-              <option value="Civil">Civil</option>
-              <option value="Chemical">Chemical</option>
-              <option value="Electrical">Electrical</option>
-              <option value="Marine">Marine</option>
-              <option value="Mechanical">Mechanical</option>
-              <option value="Petroleum">Petroleum</option>
-            </select>
-          </section>
+              <label class="input-label" for="firstname-input">Firstname</label>
+              <span
+                data-student-details-error-message-field
+                data-error-firstname
+                class="error-firstname text-error-message"
+                id="firstname-error-field"
+              ></span>
+              <input
+                data-input-firstname
+                class="text-input"
+                type="text"
+                name="firstname"
+                id="firstname-input"
+                placeholder="Enter Firstname"
+                required
+              />
+            </section>
+            <section
+              class="input-section surname-input-section student-details-step-input-section"
+            >
+              <label class="input-label" for="surname-input">Surname</label>
+              <span
+                data-student-details-error-message-field
+                data-error-surname
+                class="error-surname text-error-message"
+                id="surname-error-field"
+              ></span>
+              <input
+                data-input-surname
+                class="text-input"
+                type="text"
+                name="surname"
+                id="surname-input"
+                placeholder="Enter Surname"
+                required
+              />
+            </section>
+
+            <section
+              class="input-section middlename-input-section student-details-step-input-section"
+            >
+              <label class="input-label" for="middlename-input"
+                >Middlename</label
+              >
+              <span
+                data-student-details-error-message-field
+                data-error-middlename
+                class="error-middlename text-error-message"
+                id="middlename-error-field"
+              ></span>
+              <input
+                data-input-surname
+                class="text-input"
+                type="text"
+                name="middlename"
+                id="middlename-input"
+                placeholder="Enter Middlename"
+              />
+            </section>
+
+            <section
+              class="input-section deparment-select-section deparment-input-section student-details-step-input-section"
+            >
+              <label class="input-label" for="department-input"
+                >Department</label
+              >
+              <span
+                data-student-details-error-message-field
+                data-error-department
+                class="error-department text-error-message"
+                id="department-error-field"
+              ></span>
+              <select
+                data-input-department
+                data-select-deparment
+                class="text-input select-input"
+                type="text"
+                name="department"
+                id="department-input"
+                required
+              >
+                <option default value="">Select Department</option>
+                <option value="Agricultural">Agriculture</option>
+                <option value="Civil">Civil</option>
+                <option value="Chemical">Chemical</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Marine">Marine</option>
+                <option value="Mechanical">Mechanical</option>
+                <option value="Petroleum">Petroleum</option>
+              </select>
+            </section>
+          </div>
           <section>
             <button data-proceed-btn class="btn proceed-btn" type="button">
               Proceed
@@ -173,7 +179,7 @@
         <div
           data-step-choose-course
           data-step-3
-          class="form-step active choose-course-step"
+          class="form-step choose-course-step"
           id="choose-course-step"
         >
           <button data-back-button type="button" class="btn back-btn">
@@ -225,6 +231,42 @@
               <span class="spinner"></span>
               <p>please wait....</p>
             </section>
+          </section>
+        </div>
+
+        <!--File Upload Step-->
+
+        <div
+          data-step-file-upload
+          data-step-4
+          class="form-step active file-upload-step"
+          id="file-upload-step"
+        >
+          <button data-back-button type="button" class="btn back-btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M21 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061A1.125 1.125 0 0 1 21 8.689v8.122ZM11.25 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061a1.125 1.125 0 0 1 1.683.977v8.122Z"
+              />
+            </svg>
+          </button>
+          <h4 data-upload-student-name class="upload-student-name">Welcome</h4>
+          <h4>Upload Files</h4>
+
+          <section
+            data-upload-choice-picker-secition
+            class="upload-choice-picker-section"
+          >
+            <button>Code Files</button>
+            <button>Video Files</button>
           </section>
         </div>
       </form>

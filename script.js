@@ -1,38 +1,58 @@
-//Globals
-
 const API_BASE_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:5239"
     : `http://${window.location.hostname}:5239`;
 
-//general funcions
-// function computeFormToShow(hide, show, direction) {
-//   const formToShow = document.querySelector(`[data-step-${show}]`);
-//   const generalContainer = document.querySelector("[data-container]");
-//   generalContainer.classList.add("change-form");
-//   formToShow.classList.add("active");
-//   if (direction == "next") {
-//     hide.classList.add("slide-out");
-//     formToShow.classList.add("slide-in");
-//     hide.addEventListener("animationend", () => {
-//       hide.classList.remove("active");
-//       hide.classList.remove("slide-out");
-//       formToShow.classList.remove("slide-in");
-//       generalContainer.classList.remove("change-form");
-//     });
-//   }
-//   if (direction == "prev") {
-//     hide.classList.add("slide-out-right");
-//     formToShow.classList.add("slide-in-left");
-//     hide.addEventListener("animationend", () => {
-//       hide.classList.remove("active");
-//       hide.classList.remove("slide-out-right");
-//       formToShow.classList.remove("slide-in-left");
-//       generalContainer.classList.remove("change-form");
-//     });
-//   }
-// }
+//global state variables and function
 
+const createStateManager = (initialState = null, isDynamic = false) => {
+  let state = initialState;
+  const subscribers = [];
+
+  return {
+    getState() {
+      return state;
+    },
+    setState(newState) {
+      if (
+        isDynamic &&
+        typeof state === "object" &&
+        typeof newState === "object"
+      ) {
+        state = { ...state, ...newState };
+      } else {
+        state = newState;
+      }
+      subscribers.forEach((fn) => fn(state));
+    },
+
+    subscribe(fn) {
+      subscribers.push(fn);
+      return () => {
+        const index = subscribers.indexOf(fn);
+        subscribers.splice(index, 1);
+      };
+    }
+  };
+};
+
+const userState = createStateManager(null);
+const userIdState = createStateManager("");
+
+function setCurrentStudentData(data) {
+  userState.setState(data);
+  sessionStorage.setItem("currentStudentGeneralData", JSON.stringify(data));
+}
+
+function getCurrentUserData() {
+  return userState.getState();
+}
+
+function getCurrentStudentId() {
+  return userIdState.getState();
+}
+
+//general funcions
 const dialogModalHandler = (() => {
   const dialogModal = document.querySelector("[data-dialog-modal]");
   const dialogMessage = dialogModal.querySelector("[data-dailog-message]");
@@ -42,6 +62,8 @@ const dialogModalHandler = (() => {
   const dialogConfirmButton = dialogModal.querySelector(
     "[data-dialog-confirm-button]"
   );
+
+  let handleConfirmClick = null;
 
   function closeDialog() {
     dialogModal.classList.remove("toast-in");
@@ -53,6 +75,10 @@ const dialogModalHandler = (() => {
       },
       { once: true }
     );
+
+    if (handleConfirmClick) {
+      dialogConfirmButton.removeEventListener("click", handleConfirmClick);
+    }
   }
 
   function initializeEventListiners() {
@@ -64,14 +90,13 @@ const dialogModalHandler = (() => {
     dialogModal.classList.add("toast-in");
     dialogModal.showModal();
     dialogMessage.textContent = message;
-    dialogConfirmButton.addEventListener(
-      "click",
-      () => {
-        action();
-        closeDialog();
-      },
-      { once: true }
-    );
+
+    handleConfirmClick = () => {
+      action();
+      closeDialog();
+    };
+
+    dialogConfirmButton.addEventListener("click", handleConfirmClick);
   }
 
   return {
@@ -104,7 +129,7 @@ const generalHandler = (() => {
 
   const resizeObserver = new ResizeObserver(() => {
     const totalHeight = getTotalHeight();
-    generalContainer.style.height = `${totalHeight}px`; // Update max-height based on the total height
+    generalContainer.style.height = `${totalHeight}px`;
   });
 
   resizeObserver.observe(dynamicContent);
@@ -119,8 +144,6 @@ function computeFormToShow(hide, show, direction) {
   const generalContainer = document.querySelector("[data-container]");
   generalContainer.classList.add("change-form");
   formToShow.classList.add("active");
-  // generalContainer.style.height = `${formToShow.scrollHeight * 1.4}px`;
-
   const animationEndHandler = () => {
     hide.classList.remove(
       "active",
@@ -144,19 +167,14 @@ function computeFormToShow(hide, show, direction) {
   }
 }
 
-function getCurrentStudentId() {
-  const id = handleFirstStep.getCurrentStudentId();
-  return id;
-}
-
 function showToast(message, type) {
   return handleToastMessage.displayToast(message, type);
 }
 
 function getCourseAssignmentMetadata(assigmentType) {
-  const studentId = getCurrentStudentId();
+  const studentId = getCurrentUserData().studentId;
   let requestData = {};
-  requestData["studentId"] = getCurrentStudentId();
+  requestData["studentId"] = studentId;
   requestData["assignmentType"] = assigmentType;
 
   try {
@@ -176,90 +194,15 @@ function getFetchedAssignmentMetadata() {
 
 //handle toast message
 
-// const handleToastMessage = (() => {
-//   const toastTemplate = document.querySelector("[data-toast-template]");
-//   const toastPlaceholder = document.querySelector("[data-toast-placeholder]");
-
-//   function updateToastContainerHeight() {
-//     let totalHeight = 0;
-//     Array.from(toastPlaceholder.children).forEach((toast) => {
-//       totalHeight += toast.offsetHeight;
-//     });
-//     toastPlaceholder.style.height = `${totalHeight}px`;
-//   }
-
-//   function displayToast(message, type) {
-//     const toastTemplateContent = toastTemplate.content.cloneNode(true);
-//     const toastMessageIcon = toastTemplateContent.querySelector(
-//       `[data-toast-icon-type-${type}]`
-//     );
-//     const toastMessage = toastTemplateContent.querySelector(
-//       "[data-toast-message]"
-//     );
-//     const toastCloseButton = toastTemplateContent.querySelector(
-//       "[data-toast-close-button]"
-//     );
-
-//     toastMessageIcon.classList.add("active");
-//     toastMessage.textContent = message;
-//     toastPlaceholder.appendChild(toastTemplateContent);
-//     const appendedToast = toastPlaceholder.lastElementChild;
-//     appendedToast.dataset.toastType = type;
-//     console.log(appendedToast);
-//     appendedToast.classList.add("toast-in");
-
-//     if (toastPlaceholder.children.length > 0) {
-//       toastPlaceholder.classList.add("active");
-//     }
-
-//     updateToastContainerHeight();
-
-//     toastCloseButton.addEventListener("click", () => {
-//       appendedToast.classList.remove("toast-in");
-//       appendedToast.classList.add("toast-out");
-//       appendedToast.addEventListener(
-//         "animationend",
-//         () => {
-//           toastPlaceholder.removeChild(appendedToast);
-//           updateToastContainerHeight();
-//           if (toastPlaceholder.children.length < 1) {
-//             toastPlaceholder.classList.remove("active");
-//           }
-//         },
-//         { once: true }
-//       );
-//     });
-
-//     setTimeout(() => {
-//       appendedToast.classList.remove("toast-in");
-//       appendedToast.classList.add("toast-out");
-//       appendedToast.addEventListener("animationend", () => {
-//         toastPlaceholder.removeChild(appendedToast);
-//         updateToastContainerHeight();
-//         if (toastPlaceholder.children.length < 1) {
-//           toastPlaceholder.classList.remove("active");
-//         }
-//       });
-//     }, 4000);
-//   }
-
-//   return {
-//     displayToast: displayToast
-//   };
-// })();
-
 const handleToastMessage = (() => {
   const toastTemplate = document.querySelector("[data-toast-template]");
   const toastPlaceholder = document.querySelector("[data-toast-placeholder]");
 
   function updateToastContainerHeight() {
-    // Calculate the total height of all toasts in the container
     let totalHeight = 0;
     Array.from(toastPlaceholder.children).forEach((toast) => {
       totalHeight += toast.offsetHeight;
     });
-
-    // Update the height of the toastPlaceholder to fit the total height of all toasts
     toastPlaceholder.style.height = `${totalHeight}px`;
   }
 
@@ -286,15 +229,12 @@ const handleToastMessage = (() => {
       toastPlaceholder.classList.add("active");
     }
 
-    // Update the container height after adding a toast
     updateToastContainerHeight();
 
-    // Handle close button click
     toastCloseButton.addEventListener("click", () => {
       closeToast(appendedToast);
     });
 
-    // Auto-remove after 4 seconds
     setTimeout(() => {
       closeToast(appendedToast);
     }, 4000);
@@ -304,12 +244,11 @@ const handleToastMessage = (() => {
     toast.classList.remove("toast-in");
     toast.classList.add("toast-out");
 
-    // Use animationend event to remove the toast after the animation completes
     toast.addEventListener(
       "animationend",
       () => {
         toastPlaceholder.removeChild(toast);
-        updateToastContainerHeight(); // Update height after toast is removed
+        updateToastContainerHeight();
         if (toastPlaceholder.children.length < 1) {
           toastPlaceholder.classList.remove("active");
         }
@@ -367,48 +306,36 @@ const handleFirstStep = (() => {
     return matricPattern.test(studentId) || jambPattern.test(studentId);
   }
 
-  function validateStudentId() {
-    if (studentIdInput.value == "") {
+  function validateStudentId(value) {
+    if (value == "") {
       updateUIonError("Student ID is required");
       return false;
     }
-    if (!isValidStudentId(studentIdInput.value)) {
+    if (!isValidStudentId(value)) {
       updateUIonError("Student ID does not match the specified format");
       return false;
     }
     return true;
   }
 
-  function checkForStudentRequest() {
+  let currentStudentData = {};
+
+  function checkForStudentRequest(studentId) {
     return new Promise((resolve, reject) => {
       const req = new XMLHttpRequest();
-      req.open(
-        "GET",
-        `${API_BASE_URL}/student/?studentId=${studentIdInput.value}`,
-        true
-      );
+      req.open("GET", `${API_BASE_URL}/student/?studentId=${studentId}`, true);
 
       req.onload = function () {
-        if (this.status == 200) {
-          let response = JSON.parse(this.response);
-          sessionStorage.setItem(
-            "currentStudentGeneralData",
-            JSON.stringify(response)
-          );
-          updateUItoDefault();
-          console.log(response);
+        if (req.status == 200) {
+          let response = JSON.parse(req.responseText);
           resolve(response);
         } else {
-          updateUItoDefault();
-          console.log(this.response);
-          reject(JSON.parse(this.response));
+          reject(JSON.parse(req.responseType));
         }
       };
 
       req.onerror = function () {
-        updateUItoDefault();
-        console.log(this.response);
-        reject(JSON.parse(this.response));
+        reject(this.responseText);
       };
 
       req.send();
@@ -419,18 +346,29 @@ const handleFirstStep = (() => {
 
   async function handleProceed() {
     proceededBefore = true;
-    let studentIdValidationResult = validateStudentId(studentIdInput.value);
+    const studentIdValidationResult = validateStudentId(studentIdInput.value);
     if (studentIdValidationResult) {
       clearUIError();
       updateUIonProceed();
-
+      userIdState.setState(studentIdInput.value);
       try {
-        var response = await checkForStudentRequest();
+        var response = await checkForStudentRequest(studentIdInput.value);
         console.log(response);
+        updateUItoDefault();
+        if (response.status == "Present") {
+          setCurrentStudentData(response.data);
+        }
         if (response.status == "NotPresent") {
           computeFormToShow(firstStepContainer, "student-details", "next");
         }
+        if (
+          response.status == "Present" &&
+          response.data.department == "Electrical"
+        ) {
+          computeFormToShow(firstStepContainer, "choose-course", "next");
+        }
       } catch (error) {
+        updateUItoDefault();
         console.error("Error checking for student request:", error);
       }
     }
@@ -455,7 +393,8 @@ const handleFirstStep = (() => {
     init: addEventListiners,
     getCurrentStudentId: function () {
       return studentIdInput.value;
-    }
+    },
+    currentStudentData: currentStudentData
   };
 })();
 
@@ -624,31 +563,41 @@ const handleStudentDetailsStep = (() => {
   }
 
   function submitStudentDetailsRequest(data) {
-    const req = new XMLHttpRequest();
-    const requestData = convertInputDataToRequestBodyData(data);
-    req.open("POST", `${API_BASE_URL}/student`, true);
-    req.setRequestHeader("Content-Type", "application/json");
-    req.onload = function () {
-      if (this.status == 200) {
-        let reponse = JSON.parse(this.response);
-        updateUItoDefault();
-        console.log(reponse);
-        if (reponse.status == "Present") {
-          showToast(reponse.message, "info");
+    return new Promise((resolve, reject) => {
+      const req = new XMLHttpRequest();
+      req.open("POST", `${API_BASE_URL}/student`, true);
+      req.setRequestHeader("Content-Type", "application/json");
+      req.onload = function () {
+        if (req.status === 200) {
+          let response = JSON.parse(req.responseText);
+          resolve(response);
         } else {
-          showToast(reponse.message, "success");
+          reject(JSON.parse(req.responseText));
         }
-      } else {
-        updateUItoDefault();
-        console.log(this.response);
-      }
-    };
-    req.onerror = function () {
-      updateUItoDefault();
-      console.log(this.response);
-    };
+      };
+      req.onerror = function () {
+        reject(this.responseText);
+      };
+      req.send(JSON.stringify(data));
+    });
+  }
 
-    req.send(JSON.stringify(requestData));
+  async function submitStudentDetailsRequestAction(data) {
+    try {
+      const response = await submitStudentDetailsRequest(data);
+      console.log(response);
+      if (response.status == "Present") {
+        showToast(response.message, "info");
+      } else {
+        showToast(response.message, "success");
+        setCurrentStudentData(response.data);
+      }
+      updateUItoDefault();
+    } catch (error) {
+      updateUItoDefault();
+      console.error(error);
+      showToast("An error occured", "error");
+    }
   }
 
   let proceededBefore = false;
@@ -656,8 +605,10 @@ const handleStudentDetailsStep = (() => {
 
   function handleSubmissionConfirm() {
     updateUIonProceed();
-    submitStudentDetailsRequest(studentDataInputFields);
-    dialogShownBefore = true;
+    const requestData = convertInputDataToRequestBodyData(
+      studentDataInputFields
+    );
+    submitStudentDetailsRequestAction(requestData);
   }
 
   function handleStudentDataProceed() {
@@ -668,8 +619,8 @@ const handleStudentDetailsStep = (() => {
         "Please make sure entered data is correct before proceeding, data once submitted cannot be updated",
         handleSubmissionConfirm
       );
-    }
-    if (isValidData && dialogShownBefore == true) {
+      dialogShownBefore = true;
+    } else if (isValidData && dialogShownBefore == true) {
       handleSubmissionConfirm();
     }
   }
@@ -705,7 +656,6 @@ const handleStudentDetailsStep = (() => {
 })();
 
 handleStudentDetailsStep.init();
-[];
 
 //choose course form step logic
 
@@ -744,30 +694,9 @@ const handleChooseCourseStep = (() => {
     spinnerSection.classList.remove("active");
   }
 
-  function getCourseAssignmentMetadata(requestData) {
-    return new Promise((resolve, reject) => {
-      const req = new XMLHttpRequest();
-      req.open(
-        "GET",
-        `${API_BASE_URL}/?studentId=${requestData.studentId}?assigmentType=${requestData.assignmentType}`,
-        true
-      );
-
-      req.onload = function () {
-        if (this.response.status == 200) {
-          console.log(this.response);
-          resolve(JSON.parse(this.response));
-        } else {
-          console.log(this.response);
-          reject(JSON.parse(this.response));
-        }
-      };
-      req.onerror = function () {
-        console.log(this.response);
-        reject(JSON.parse(this.response));
-      };
-    });
-  }
+  const userStateUnsubscribe = userState.subscribe((user) => {
+    studentNameHeader.textContent = `Welcome ${user.firstname}`;
+  });
 
   let proceededBefore = false;
 
@@ -792,8 +721,6 @@ const handleChooseCourseStep = (() => {
     }
   }
 
-  const assignmentMetadata = {};
-
   async function handleChooseCourseProceed(value) {
     proceededBefore = true;
     const isValidChoice = validateChooseCourseDropdown(value);
@@ -801,11 +728,11 @@ const handleChooseCourseStep = (() => {
       updateUIonProceed();
       try {
         const requestData = computeRequestData(value);
-        const response = await getCourseAssignmentMetadata(requestData);
-        assignmentMetadata = response;
+        await getCourseAssignmentMetadata(requestData);
         proceededBefore = false;
         updateUItoDefault();
       } catch (error) {
+        updateUItoDefault();
         console.log("error fetching an assignment data", error);
         showToast("An error eccured", "error");
       }
@@ -822,12 +749,14 @@ const handleChooseCourseStep = (() => {
         validateChooseCourseDropdown(event.target.value);
       }
     });
+
+    backButton.addEventListener("click", () => {
+      computeFormToShow(chooseCourseStepContainer, "first", "prev");
+    });
   }
 
   return {
-    init: initializeEventListiners,
-    getCourseAssignmentMetadata: getCourseAssignmentMetadata,
-    assignmentMetadata: assignmentMetadata
+    init: initializeEventListiners
   };
 })();
 
