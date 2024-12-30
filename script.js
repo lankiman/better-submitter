@@ -759,13 +759,17 @@ handleChooseCourseStep.init();
 
 //Handle Files Selection Containier
 
-const selectedCodeFilesState = createStateManager(null);
-const selectedVideoFilesState = createStateManager(null);
+const selectedCodeFilesState = createStateManager([]);
+const selectedVideoFilesState = createStateManager([]);
 
 const handleFileSelection = (() => {
   const uploadChoiceState = createStateManager("code");
   const fileUploadStepContainer = document.querySelector(
     "[data-step-file-upload]"
+  );
+
+  const currentUsernameHeader = fileUploadStepContainer.querySelector(
+    "[data-upload-student-name]"
   );
   const uploadCodefilesChoiceBtn = fileUploadStepContainer.querySelector(
     "[data-upload-choice-codefiles]"
@@ -800,15 +804,34 @@ const handleFileSelection = (() => {
   );
 
   const videoDropzoneFilePicker = videoFileDropzone.querySelector(
-    "[data-dropzone-code-file-picker]"
+    "[data-dropzone-video-file-picker]"
   );
   const requiredFileInfoVideoDropzone = videoFileDropzone.querySelector(
     "[data-codefile-info-dropzone]"
   );
 
+  const selectedFilesContainer = fileUploadStepContainer.querySelector(
+    "[data-selected-files-container]"
+  );
+
+  const selectedCodeFilesContainer = selectedFilesContainer.querySelector(
+    "[data-selected-code-files]"
+  );
+
+  const selelecedCodeFilesList = selectedCodeFilesContainer.querySelector(
+    "[data-selected-code-files-list]"
+  );
+
+  const selectedVideoFilesContainer = selectedFilesContainer.querySelector(
+    "[data-selected-video-files]"
+  );
+  const selectedVideoFilesList = selectedVideoFilesContainer.querySelector(
+    "[data-selected-video-files-list]"
+  );
+
   function updateRequiredFileInfoState(state) {
-    requiredFileInfoMobile.textContent = `files must be ${state} files, max size of 1mb`;
-    requiredFileInfoCodeDropzone.textContent = `files must be ${state} files, max size of 1mb`;
+    requiredFileInfoMobile.textContent = `file must be a ${state} file, max size of 1mb`;
+    requiredFileInfoCodeDropzone.textContent = `file must be a ${state} file, max size of 1mb`;
   }
 
   function computeRequiredFileInfoState(state) {
@@ -826,8 +849,8 @@ const handleFileSelection = (() => {
       }
     }
     if (state == "video") {
-      requiredFileInfoMobile.textContent = `files must be .mp4 files, max size of 100mb`;
-      requiredFileInfoCodeDropzone.textContent = `files must be .mp4 files, max size of 100mb`;
+      requiredFileInfoMobile.textContent = `file must be a .mp4 file, max size of 100mb`;
+      requiredFileInfoCodeDropzone.textContent = `file must be a .mp4 file, max size of 100mb`;
     }
   }
 
@@ -886,6 +909,45 @@ const handleFileSelection = (() => {
     }
   }
 
+  function updateFileListItem(file) {
+    const fileChoice = uploadChoiceState.getState();
+  }
+
+  function handleFileSelection(files) {
+    const fileChoice = uploadChoiceState.getState();
+    if (fileChoice == "code") {
+      const selectedCodeFiles = selectedCodeFilesState.getState();
+      for (let file of files) {
+        const existingIndex = selectedCodeFiles.findIndex(
+          (existingFile) => existingFile === file.name
+        );
+        if (existingIndex !== 1) {
+          selectedCodeFiles.splice(existingIndex, 1, file);
+          selectedCodeFilesState.setState(selectedCodeFiles);
+        } else {
+          selectedCodeFiles.push(file);
+          selectedCodeFilesState.setState(selectedCodeFiles);
+        }
+      }
+      codeFilesInput.value = "";
+    } else {
+      const selectedVideoFiles = selectedVideoFilesState.getState();
+      for (let file of files) {
+        const existingIndex = selectedVideoFiles.findIndex(
+          (existingFile) => existingFile === file.name
+        );
+        if (existingIndex !== 1) {
+          selectedVideoFiles.splice(existingIndex, 1, file);
+          selectedVideoFilesState.setState(selectedVideoFiles);
+        } else {
+          selectedVideoFiles.push(file);
+          selectedVideoFilesState.setState(selectedVideoFiles);
+        }
+      }
+      videoFilesInput.value = "";
+    }
+  }
+
   function initializeSubscribers() {
     const requiredFileInfoUnsubscribe = uploadChoiceState.subscribe(
       computeRequiredFileInfoState
@@ -893,6 +955,10 @@ const handleFileSelection = (() => {
 
     const codeFileInputUnsubscribe = selectedCourseState.subscribe((state) => {
       computeCodefilesInputState(state);
+    });
+
+    const currentUserDataUnsubscribe = userState.subscribe((state) => {
+      currentUsernameHeader.textContent = `Welcome ${state.firstname}`;
     });
   }
 
@@ -915,8 +981,17 @@ const handleFileSelection = (() => {
       let uploadChoice = uploadChoiceState.getState();
       if (uploadChoice == "code") {
         codeFilesInput.click();
-        console.log("clicked");
       }
+      if (uploadChoice == "video") {
+        videoFilesInput.click();
+      }
+    });
+
+    codeDropzoneFilePicker.addEventListener("click", () => {
+      codeFilesInput.click();
+    });
+    videoDropzoneFilePicker.addEventListener("click", () => {
+      videoFilesInput.click();
     });
   }
 

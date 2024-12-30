@@ -295,7 +295,7 @@
           </section>
           <section class="file-info-mobile">
             <p data-file-info-mobile>
-              files must be .py files, max size of 1mb
+              file must be a .py file, max size of 1mb
             </p>
           </section>
           <div data-file-selection-container class="file-selection-container">
@@ -360,7 +360,7 @@
               </div>
               <section class="code-file-info file-info-dropzone">
                 <p data-file-info-dropzone data-codefile-info-dropzone>
-                  files must be .py files, max size of 1mb
+                  file must be a .py file, max size of 1mb
                 </p>
               </section>
             </div>
@@ -399,13 +399,54 @@
               </div>
               <section class="video-file-info file-info-dropzone">
                 <p data-file-info-dropzone data-videofile-info-dropzone>
-                  files must be .mp4 files, max size of 100mb
+                  file must be a .mp4 file, max size of 100mb
                 </p>
               </section>
             </div>
           </div>
-          <div data-selected-files-container></div>
-          <div data-uploading-files-container></div>
+          <div
+            data-selected-files-container
+            class="selected-files-container active"
+          >
+            <div
+              data-selected-code-files
+              class="selected-files selected-code-files active"
+            >
+              <ul
+                data-selected-code-files-list
+                class="selected-files-list selected-code-files-list"
+              ></ul>
+            </div>
+            <div
+              data-selected-video-files
+              class="selected-files selected-video-files"
+            >
+              <ul
+                data-selected-video-files-list
+                class="selected-files-list selected-video-files-list"
+              ></ul>
+            </div>
+          </div>
+          <div data-uploading-files-container class="uploading-files-container">
+            <div
+              data-uploading-code-files
+              class="uploading-files uploading-code-files active"
+            >
+              <ul
+                data-uploading-code-files-list
+                class="uploading-files-list uploading-code-files-list"
+              ></ul>
+            </div>
+            <div
+              data-uploading-video-files
+              class="uploading-files uploading-video-files"
+            >
+              <ul
+                data-uploading-video-files-list
+                class="uploading-files-list uploading-video-files-list"
+              ></ul>
+            </div>
+          </div>
         </div>
       </form>
     </main>
