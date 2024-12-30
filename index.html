@@ -242,6 +242,20 @@
           class="form-step active file-upload-step"
           id="file-upload-step"
         >
+          <input
+            hidden
+            data-videofiles-input
+            type="file"
+            accept=".mp4"
+            multiple
+          />
+          <input
+            hidden
+            data-codefiles-input
+            type="file"
+            accept=".py"
+            multiple
+          />
           <button data-back-button type="button" class="btn back-btn">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -260,14 +274,138 @@
           </button>
           <h4 data-upload-student-name class="upload-student-name">Welcome</h4>
           <h4>Upload Files</h4>
-
           <section
             data-upload-choice-picker-secition
             class="upload-choice-picker-section"
           >
-            <button>Code Files</button>
-            <button>Video Files</button>
+            <button
+              type="button"
+              data-upload-choice-codefiles
+              class="upload-choice-button active codefiles-button"
+            >
+              Code Files
+            </button>
+            <button
+              type="button"
+              data-upload-choice-videofiles
+              class="upload-choice-button videofiles-button"
+            >
+              Video Files
+            </button>
           </section>
+          <section class="file-info-mobile">
+            <p data-file-info-mobile>
+              files must be .py files, max size of 1mb
+            </p>
+          </section>
+          <div data-file-selection-container class="file-selection-container">
+            <div
+              data-file-picker-container-mobile
+              class="file-picker-container-mobile"
+            >
+              <button
+                type="button"
+                data-file-picker-button-mobile
+                class="file-picker-button-mobile"
+              >
+                <span>Add file</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  class="size-6"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 0 0 2.25-2.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v2.25A2.25 2.25 0 0 0 6 10.5Zm0 9.75h2.25A2.25 2.25 0 0 0 10.5 18v-2.25a2.25 2.25 0 0 0-2.25-2.25H6a2.25 2.25 0 0 0-2.25 2.25V18A2.25 2.25 0 0 0 6 20.25Zm9.75-9.75H18a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 18 3.75h-2.25A2.25 2.25 0 0 0 13.5 6v2.25a2.25 2.25 0 0 0 2.25 2.25Z"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div
+              data-codefile-dropzone-container
+              class="drag-drop-container active codefile-dropzone"
+            >
+              <div class="dropzone-svg">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="size-6"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M14.25 9.75 16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z"
+                  />
+                </svg>
+              </div>
+              <div
+                class="dropzone-file-picker-container"
+                data-dropzone-code-file-picker-container
+              >
+                Drag & Drop or
+                <button
+                  data-dropzone-code-file-picker
+                  class="dropzone-file-picker dropzone-code-file-picker"
+                >
+                  Choose code
+                </button>
+                file to upload
+              </div>
+              <section class="code-file-info file-info-dropzone">
+                <p data-file-info-dropzone data-codefile-info-dropzone>
+                  files must be .py files, max size of 1mb
+                </p>
+              </section>
+            </div>
+            <div
+              data-videofile-dropzone-container
+              class="drag-drop-container videofile-dropzone"
+            >
+              <div class="dropzone-svg">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="size-6"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
+                  />
+                </svg>
+              </div>
+              <div
+                class="dropzone-file-picker-container"
+                data-dropzone-code-file-picker-container
+              >
+                Drag & Drop or
+                <button
+                  data-dropzone-video-file-picker
+                  class="dropzone-file-picker dropzone-video-file-picker"
+                >
+                  Choose video
+                </button>
+                file to upload
+              </div>
+              <section class="video-file-info file-info-dropzone">
+                <p data-file-info-dropzone data-videofile-info-dropzone>
+                  files must be .mp4 files, max size of 100mb
+                </p>
+              </section>
+            </div>
+          </div>
+          <div data-selected-files-container></div>
+          <div data-uploading-files-container></div>
         </div>
       </form>
     </main>
