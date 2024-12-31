@@ -405,12 +405,13 @@
             </div>
           </div>
           <div
-            data-selected-files-container
-            class="selected-files-container active"
+            data-file-upload-selection
+            data-codesection-container
+            class="codesection-container file-upload-selection"
           >
             <div
               data-selected-code-files
-              class="selected-files selected-code-files active"
+              class="selected-files selection-state selected-code-files active"
             >
               <ul
                 data-selected-code-files-list
@@ -418,28 +419,32 @@
               ></ul>
             </div>
             <div
-              data-selected-video-files
-              class="selected-files selected-video-files"
-            >
-              <ul
-                data-selected-video-files-list
-                class="selected-files-list selected-video-files-list"
-              ></ul>
-            </div>
-          </div>
-          <div data-uploading-files-container class="uploading-files-container">
-            <div
               data-uploading-code-files
-              class="uploading-files uploading-code-files active"
+              class="uploading-files selection-state uploading-code-files"
             >
               <ul
                 data-uploading-code-files-list
                 class="uploading-files-list uploading-code-files-list"
               ></ul>
             </div>
+          </div>
+          <div
+            data-videosection-container
+            data-file-upload-selection
+            class="file-upload-selection videosection-container"
+          >
+            <div
+              data-selected-video-files
+              class="selected-files selection-state selected-video-files"
+            >
+              <ul
+                data-selected-video-files-list
+                class="selected-files-list selected-video-files-list"
+              ></ul>
+            </div>
             <div
               data-uploading-video-files
-              class="uploading-files uploading-video-files"
+              class="uploading-files selection-state uploading-video-files"
             >
               <ul
                 data-uploading-video-files-list

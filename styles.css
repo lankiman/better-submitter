@@ -551,7 +551,6 @@ body {
 .file-picker-button-mobile {
   display: flex;
   border: none;
-
   gap: 0.1rem;
   justify-content: center;
   align-items: center;
@@ -569,6 +568,86 @@ body {
 
 .file-picker-button-mobile:hover {
   color: gray;
+}
+.selected-file-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.2rem;
+  background-color: rgb(223, 221, 221);
+  width: 100%;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+
+  border: 1px solid lightgrey;
+}
+.selected-file-list-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.selected-file-list-item-svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0.2rem;
+  border-radius: 0.3rem;
+  border: 1px solid gray;
+  color: gray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.selected-file-list-item-name {
+  padding: 0;
+  margin: 0;
+  font-size: medium;
+}
+.selected-file-list-item-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  flex-grow: 1;
+}
+.selected-file-list-buttons-section {
+  display: flex;
+  gap: 0.3rem;
+}
+.selected-file-list-button {
+  background: none;
+  cursor: pointer;
+  background-color: none;
+  width: 2rem;
+  display: flex;
+  border: 1px solid #94a3b8;
+  color: gray;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.selected-file-list-button:hover {
+  color: black;
+  border-color: black;
+}
+.test-list {
+  width: 40%;
+  list-style: none;
+}
+
+.file-upload-selection {
+  display: none;
+}
+.selection-state {
+  display: none;
+}
+.selection-state.active {
+  display: flex;
+}
+
+.file-upload-selection.active {
+  display: flex;
 }
 
 /*Animation Keyframes*/
@@ -790,5 +869,9 @@ body {
 
   .file-picker-container-mobile {
     display: flex;
+  }
+
+  .selected-file-list-item-name {
+    font-size: x-small;
   }
 }
