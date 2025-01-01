@@ -757,10 +757,289 @@ const handleChooseCourseStep = (() => {
 
 handleChooseCourseStep.init();
 
-//Handle Files Selection Containier
+//Handle Files Selection Logic
 
 const selectedCodeFilesState = createStateManager(new Map());
 const selectedVideoFilesState = createStateManager(new Map());
+const fileNumberButtons = new Map();
+
+const createModalFactory = () => {
+  function createModal(type) {
+    const modal = document.createElement("div");
+    modal.className = "assignment-number-picker-modal";
+    modal.innerHTML = `
+            <div class="assigment-number-picker-grid" data-assigment-number-picker-grid></div>
+        `;
+    modal.dataset.pickerType = type;
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function initializeNumbers(modal, maxNumber) {
+    const grid = modal.querySelector("[data-assigment-number-picker-grid]");
+    grid.innerHTML = "";
+    for (let i = 1; i <= maxNumber; i++) {
+      const btn = document.createElement("button");
+      btn.className = "number-btn";
+      btn.dataset.assignmentNumber = i;
+      btn.textContent = i;
+      grid.appendChild(btn);
+    }
+  }
+  return { createModal, initializeNumbers };
+};
+
+const createTracker = (usableNumbers) => {
+  const assignments = new Map();
+  const subscribers = [];
+
+  function getAssignments() {
+    return assignments;
+  }
+
+  function getAssignment(fileId) {
+    return assignments.get(fileId);
+  }
+
+  function assignNumber(fileId, number) {
+    assignments.set(fileId, number);
+    notify({ actionType: "assign", fileId, number });
+  }
+
+  function unassignNumber(fileId) {
+    const assignment = assignments.get(fileId);
+    if (assignment) {
+      assignments.delete(fileId);
+      notify({ actionType: "unassign", fileId });
+    }
+  }
+
+  function isNumberUsed(number) {
+    for (const [_, assignment] of assignments) {
+      console.log(assignment);
+      if (assignment === number) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function getNumberReason(number) {
+    if (usableNumbers.includes(number)) {
+      return `Assigment submitted more than twice and can no longer be submitted`;
+    }
+    for (const [fileId, assignment] of assignments) {
+      if (assignment === number) {
+        return `Number already used by file ${fileId}`;
+      }
+    }
+  }
+
+  function subscribe(fn) {
+    subscribers.push(fn);
+    return () => subscribers.filter((sub) => sub !== fn);
+  }
+
+  function notify(data) {
+    subscribers.forEach((fn) => fn(data));
+  }
+
+  return {
+    isNumberUsed,
+    getAssignment,
+    assignNumber,
+    unassignNumber,
+    getNumberReason,
+    getAssignments,
+    subscribe,
+    notify
+  };
+};
+
+const createAssignmentNumberTracker = (type, expectedNumbers) => {
+  const trackers = {
+    code: createTracker(expectedNumbers),
+    video: createTracker(expectedNumbers)
+  };
+
+  if (!trackers[type]) {
+    throw new Error(`Unsupported type: ${type}`);
+  }
+
+  return trackers[type];
+};
+
+const createTooltipManager = () => {
+  const tooltip = document.createElement("div");
+  tooltip.className = "number-tooltip";
+  document.body.appendChild(tooltip);
+  let hideTimeout;
+
+  function showTooltip(element, reason) {
+    if (!reason) return;
+
+    clearTimeout(hideTimeout);
+    tooltip.textContent = reason;
+
+    const rect = element.getBoundingClientRect();
+    tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
+    tooltip.style.left = `${rect.left + window.scrollX}px`;
+    tooltip.style.display = "block";
+  }
+
+  function hideTooltip(delay = 0) {
+    hideTimeout = setTimeout(() => {
+      tooltip.style.display = "none";
+    }, delay);
+  }
+
+  function setupTooltipEvents(element) {
+    // Mouse events
+    element.addEventListener("mouseover", (e) => {
+      if (e.target.classList.contains("number-disabled")) {
+        showTooltip(e.target, e.target.dataset.disabledReason);
+      }
+    });
+
+    element.addEventListener("mouseout", () => hideTooltip());
+
+    // Touch events
+    element.addEventListener("touchstart", (e) => {
+      if (e.target.classList.contains("number-disabled")) {
+        e.preventDefault();
+        showTooltip(e.target, e.target.dataset.disabledReason);
+        hideTooltip(2000); // Auto-hide after 2 seconds on mobile
+      }
+    });
+  }
+
+  return { setupTooltipEvents };
+};
+
+const createNumberPicker = (type, maxNumber, submitableNumbers) => {
+  const modalFactory = createModalFactory();
+  const tooltipManger = createTooltipManager();
+  const assignmentTracker = createAssignmentNumberTracker(
+    type,
+    submitableNumbers
+  );
+
+  let activeFileId = null;
+  let modalShownState = false;
+  const modal = modalFactory.createModal(type);
+  modalFactory.initializeNumbers(modal, maxNumber);
+  tooltipManger.setupTooltipEvents(modal);
+
+  function getModalShownState() {
+    return modalShownState;
+  }
+
+  function updateNumbers() {
+    const buttons = modal.querySelectorAll(".number-btn");
+    buttons.forEach((btn) => {
+      const number = parseInt(btn.dataset.assignmentNumber);
+      const isUsed = assignmentTracker.isNumberUsed(number);
+      const currentAssignmentNumber =
+        assignmentTracker.getAssignment(activeFileId);
+
+      console.log(isUsed);
+      const shouldDisable = isUsed && currentAssignmentNumber !== number;
+      if (isUsed) {
+        console.log("reached here");
+        btn.classList.add("number-disabled");
+        btn.disabled = shouldDisable;
+      } else {
+        btn.classList.remove("number-disabled");
+      }
+
+      if (isUsed) {
+        btn.dataset.disabledReason = assignmentTracker.getNumberReason(
+          number,
+          type
+        );
+      } else {
+        delete btn.dataset.disabledReason;
+      }
+    });
+  }
+
+  function handleNumberSelection(button) {
+    const number = parseInt(button.dataset.assignmentNumber);
+    const assignment = assignmentTracker.getAssignment(activeFileId);
+    if (assignment && assignment === number) {
+      assignmentTracker.unassignNumber(activeFileId);
+    } else if (!button.classList.contains("disabled")) {
+      assignmentTracker.assignNumber(activeFileId, number);
+    }
+    hideModal();
+  }
+
+  function showModal(fileId, buttonRect) {
+    activeFileId = fileId;
+    modalShownState = true;
+    updateNumbers();
+    modal.style.top = `${buttonRect.bottom + window.scrollY + 5}px`;
+    modal.style.left = `${buttonRect.left + window.scrollX - 2}px`;
+    modal.style.display = "block";
+  }
+
+  function hideModal() {
+    modalShownState = false;
+    modal.style.display = "none";
+    activeFileId = null;
+  }
+
+  assignmentTracker.subscribe(({ actionType, fileId, number }) => {
+    if (actionType === "assign" || actionType === "unassign") {
+      updateNumbers();
+      const button = fileNumberButtons.get(fileId);
+      if (button) {
+        button.textContent = actionType === "assign" ? `${number}` : "#";
+      }
+    }
+    switch (type) {
+      case "code":
+        const selectedCourseFiles = selectedCodeFilesState.getState();
+        if (actionType === "assign") {
+          selectedCourseFiles.get(fileId).assignmentNumber = number;
+        } else if (actionType === "unassign") {
+          selectedCourseFiles.has(fileId)
+            ? (selectedCourseFiles.get(fileId).assignmentNumber = null)
+            : "";
+        }
+        selectedCodeFilesState.setState(selectedCourseFiles);
+        break;
+      case "video":
+        const selectedVideoFiles = selectedVideoFilesState.getState();
+        if (actionType === "assign") {
+          selectedVideoFiles.get(fileId).assignmentNumber = number;
+        } else if (actionType === "unassign") {
+          selectedVideoFiles.get(fileId).assignmentNumber = null;
+        }
+        selectedVideoFilesState.setState(selectedVideoFiles);
+        break;
+    }
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target.classList.contains("number-btn")) {
+      handleNumberSelection(e.target);
+    }
+  });
+
+  function handleFileDeleteUnassign(fileId) {
+    assignmentTracker.unassignNumber(fileId);
+  }
+
+  return {
+    getModalShownState,
+    handleFileDeleteUnassign,
+    hideModal,
+    showModal
+  };
+};
+
+const codeAssignmentNumberPicker = createNumberPicker("code", 3, []);
 
 const handleFileSelection = (() => {
   const uploadChoiceState = createStateManager("code");
@@ -1045,9 +1324,10 @@ const handleFileSelection = (() => {
           </p>
           <div class="selected-file-list-buttons-section">
             <button
+              type="button"
               class="selected-file-list-button select-assignment-number-button"
               data-select-assignment-number-button
-            ></button>
+            >#</button>
             <button
               type="button"
               class="delete-selected-file-button selected-file-list-button"
@@ -1076,12 +1356,34 @@ const handleFileSelection = (() => {
     );
     deleteFileButton.addEventListener("click", () => {
       removeSelectedFile(file.name);
+      switch (fileChoice) {
+        case "code":
+          codeAssignmentNumberPicker.handleFileDeleteUnassign(file.name);
+          break;
+      }
     });
 
     const selectAssignmentNumberButton = li.querySelector(
       "[data-select-assignment-number-button]"
     );
+    selectAssignmentNumberButton.addEventListener("click", () => {
+      switch (fileChoice) {
+        case "code":
+          let shownState = codeAssignmentNumberPicker.getModalShownState();
+          if (shownState) {
+            codeAssignmentNumberPicker.hideModal();
+          } else {
+            codeAssignmentNumberPicker.showModal(
+              file.name,
+              selectAssignmentNumberButton.getBoundingClientRect()
+            );
+          }
+      }
+    });
 
+    if (!fileNumberButtons.has(file.name)) {
+      fileNumberButtons.set(file.name, selectAssignmentNumberButton);
+    }
     return li;
   }
 
@@ -1201,102 +1503,3 @@ const handleFileSelection = (() => {
 })();
 
 handleFileSelection.init();
-
-const assignmentNumberSelectionModalFactory = () => {
-  function createModal(type) {
-    const modal = document.createElement("div");
-    modal.className = "assignment-number-picker-modal";
-    modal.innerHTML = `
-            <div class="assigment-number-picker-grid" data-assigment-number-picker-grid></div>
-        `;
-    modal.dataset.pickerType = type;
-    document.body.appendChild(modal);
-    return modal;
-  }
-
-  function initializeNumbers(modal, maxNumber) {
-    const grid = modal.querySelector("[assigment-number-picker-grid]");
-    grid.innerHTML = "";
-
-    for (let i = 1; i <= maxNumber; i++) {
-      const btn = document.createElement("button");
-      btn.className = "number-btn";
-      btn.dataset.assignmentNumber = i;
-      btn.textContent = i;
-      grid.appendChild(btn);
-    }
-  }
-  return { createModal, initializeNumbers };
-};
-
-const createTracker = () => {
-  const assignments = new Map();
-  const subscribers = [];
-
-  function getAssigments() {
-    return assignments;
-  }
-
-  function getAssigment(fileId) {
-    return assigmentType.get(fileId);
-  }
-
-  function assignNumber(fileId, number) {
-    assignments.set(fileId, number);
-    notify({ type: "assign", fileId, number });
-  }
-
-  function unassignNumber(fileId) {
-    const assignment = assignments.get(fileId);
-    if (assignment) {
-      assignments.delete(fileId);
-      notify({ type: "unassign", fileId });
-    }
-  }
-
-  function isNumberUsed(number) {
-    for (const [_, assignment] of assignments) {
-      if (assignment === number) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  function getNumberReason(number) {
-    for (const [fileId, assignment] of assignments) {
-      if (assignment === number) {
-        return `Assigned to file: ${fileId}`;
-      }
-    }
-    return `Assigment submitted more than twice and can no longer be submitted`;
-  }
-
-  function subscribe(fn) {
-    subscribers.push(fn);
-    return () => subscribers.filter((sub) => sub !== fn);
-  }
-
-  function notify(data) {
-    subscribers.forEach((fn) => fn(data));
-  }
-
-  return {
-    getAssigments,
-    subscribe,
-    notify
-  };
-};
-
-const assignmentNumberTracker = (type) => {
-  const trackers = {
-    code: createTracker(),
-    video: createTracker()
-  };
-
-  if (!trackers[type]) {
-    throw new Error(`Unsupported type: ${type}`);
-  }
-
-  return trackers[type];
-};
