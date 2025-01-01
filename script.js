@@ -759,6 +759,7 @@ handleChooseCourseStep.init();
 
 //Handle Files Selection Logic
 
+const uploadChoiceState = createStateManager("code");
 const selectedCodeFilesState = createStateManager(new Map());
 const selectedVideoFilesState = createStateManager(new Map());
 const fileNumberButtons = new Map();
@@ -815,8 +816,10 @@ const createTracker = (usableNumbers) => {
   }
 
   function isNumberUsed(number) {
+    if (usableNumbers.includes(number)) {
+      return true;
+    }
     for (const [_, assignment] of assignments) {
-      console.log(assignment);
       if (assignment === number) {
         return true;
       }
@@ -875,10 +878,16 @@ const createTooltipManager = () => {
   document.body.appendChild(tooltip);
   let hideTimeout;
 
+  let activeFileId = null;
+  let currentAssignment = null;
+
   function showTooltip(element, reason) {
     if (!reason) return;
 
-    clearTimeout(hideTimeout);
+    const assignmentNumber = parseInt(element.dataset.assignmentNumber);
+    if (assignmentNumber === currentAssignment) return;
+
+    if (element) clearTimeout(hideTimeout);
     tooltip.textContent = reason;
 
     const rect = element.getBoundingClientRect();
@@ -891,6 +900,11 @@ const createTooltipManager = () => {
     hideTimeout = setTimeout(() => {
       tooltip.style.display = "none";
     }, delay);
+  }
+
+  function setActiveFileInfo(fileId, assignment) {
+    activeFileId = fileId;
+    currentAssignment = assignment;
   }
 
   function setupTooltipEvents(element) {
@@ -913,7 +927,7 @@ const createTooltipManager = () => {
     });
   }
 
-  return { setupTooltipEvents };
+  return { setupTooltipEvents, setActiveFileInfo };
 };
 
 const createNumberPicker = (type, maxNumber, submitableNumbers) => {
@@ -934,6 +948,10 @@ const createNumberPicker = (type, maxNumber, submitableNumbers) => {
     return modalShownState;
   }
 
+  function getActiveFileId() {
+    return activeFileId;
+  }
+
   function updateNumbers() {
     const buttons = modal.querySelectorAll(".number-btn");
     buttons.forEach((btn) => {
@@ -942,10 +960,8 @@ const createNumberPicker = (type, maxNumber, submitableNumbers) => {
       const currentAssignmentNumber =
         assignmentTracker.getAssignment(activeFileId);
 
-      console.log(isUsed);
       const shouldDisable = isUsed && currentAssignmentNumber !== number;
       if (isUsed) {
-        console.log("reached here");
         btn.classList.add("number-disabled");
         btn.disabled = shouldDisable;
       } else {
@@ -976,6 +992,8 @@ const createNumberPicker = (type, maxNumber, submitableNumbers) => {
 
   function showModal(fileId, buttonRect) {
     activeFileId = fileId;
+    const currentAssignment = assignmentTracker.getAssignment(fileId);
+    tooltipManger.setActiveFileInfo(fileId, currentAssignment);
     modalShownState = true;
     updateNumbers();
     modal.style.top = `${buttonRect.bottom + window.scrollY + 5}px`;
@@ -987,6 +1005,7 @@ const createNumberPicker = (type, maxNumber, submitableNumbers) => {
     modalShownState = false;
     modal.style.display = "none";
     activeFileId = null;
+    tooltipManger.setActiveFileInfo(null, null);
   }
 
   assignmentTracker.subscribe(({ actionType, fileId, number }) => {
@@ -1025,13 +1044,25 @@ const createNumberPicker = (type, maxNumber, submitableNumbers) => {
     if (e.target.classList.contains("number-btn")) {
       handleNumberSelection(e.target);
     }
+    e.stopPropagation();
   });
+
+  // document.addEventListener("click", (e) => {
+  //   if (
+  //     modalShownState &&
+  //     !modal.contains(e.target) &&
+  //     !e.target.classList.contains("assignment-number-btn")
+  //   ) {
+  //     hideModal();
+  //   }
+  // });
 
   function handleFileDeleteUnassign(fileId) {
     assignmentTracker.unassignNumber(fileId);
   }
 
   return {
+    getActiveFileId,
     getModalShownState,
     handleFileDeleteUnassign,
     hideModal,
@@ -1039,10 +1070,13 @@ const createNumberPicker = (type, maxNumber, submitableNumbers) => {
   };
 };
 
-const codeAssignmentNumberPicker = createNumberPicker("code", 3, []);
+let codeAssignmentNumberPicker = createNumberPicker(
+  uploadChoiceState.getState(),
+  2,
+  []
+);
 
 const handleFileSelection = (() => {
-  const uploadChoiceState = createStateManager("code");
   const fileUploadStepContainer = document.querySelector(
     "[data-step-file-upload]"
   );
@@ -1369,8 +1403,7 @@ const handleFileSelection = (() => {
     selectAssignmentNumberButton.addEventListener("click", () => {
       switch (fileChoice) {
         case "code":
-          let shownState = codeAssignmentNumberPicker.getModalShownState();
-          if (shownState) {
+          if (codeAssignmentNumberPicker.getActiveFileId() === file.name) {
             codeAssignmentNumberPicker.hideModal();
           } else {
             codeAssignmentNumberPicker.showModal(
@@ -1378,6 +1411,7 @@ const handleFileSelection = (() => {
               selectAssignmentNumberButton.getBoundingClientRect()
             );
           }
+          break;
       }
     });
 
