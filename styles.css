@@ -572,13 +572,12 @@ body {
 .selected-file-list-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
   padding: 0.2rem;
   background-color: rgb(223, 221, 221);
   width: 100%;
   border-radius: 0.5rem;
   transition: all 0.2s ease;
-
   border: 1px solid lightgrey;
 }
 .selected-file-list-item:hover {
@@ -603,6 +602,10 @@ body {
   padding: 0;
   margin: 0;
   font-size: medium;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
 }
 .selected-file-list-item-details {
   display: flex;
@@ -631,23 +634,49 @@ body {
   color: black;
   border-color: black;
 }
-.test-list {
-  width: 40%;
+.file-list {
   list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
-
 .file-upload-selection {
   display: none;
+  width: 100%;
+  margin-top: 0.5rem;
 }
 .selection-state {
   display: none;
+  width: 100%;
 }
 .selection-state.active {
-  display: flex;
+  display: block;
 }
 
 .file-upload-selection.active {
-  display: flex;
+  display: block;
+}
+
+.assignment-number-picker-modal {
+  position: absolute;
+  min-width: fit-content;
+  min-height: fit-content;
+  padding: 0.5rem;
+  box-shadow: var(--shadow-md);
+  border-radius: 0.2rem;
+  border: 1px solid gray;
+}
+
+.assigment-number-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.assignment-number-buttons {
 }
 
 /*Animation Keyframes*/

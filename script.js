@@ -810,23 +810,41 @@ const handleFileSelection = (() => {
     "[data-codefile-info-dropzone]"
   );
 
-  const selectedFilesContainer = fileUploadStepContainer.querySelector(
-    "[data-selected-files-container]"
+  const codeSectionContainer = fileUploadStepContainer.querySelector(
+    "[data-codesection-container]"
   );
 
-  const selectedCodeFilesContainer = selectedFilesContainer.querySelector(
+  const selectedCodeFilesContainer = codeSectionContainer.querySelector(
     "[data-selected-code-files]"
   );
-
-  const selelecedCodeFilesList = selectedCodeFilesContainer.querySelector(
+  const selectedCodeFilesList = selectedCodeFilesContainer.querySelector(
     "[data-selected-code-files-list]"
   );
 
-  const selectedVideoFilesContainer = selectedFilesContainer.querySelector(
+  const uploadingCodeFilesContainer = codeSectionContainer.querySelector(
+    "[data-uploading-code-files]"
+  );
+
+  const uploadingCodeFilesList = uploadingCodeFilesContainer.querySelector(
+    "[data-uploading-code-files-list]"
+  );
+
+  const videoSectionContainer = fileUploadStepContainer.querySelector(
+    "[data-videosection-container]"
+  );
+
+  const selectedVideoFilesContainer = videoSectionContainer.querySelector(
     "[data-selected-video-files]"
   );
   const selectedVideoFilesList = selectedVideoFilesContainer.querySelector(
     "[data-selected-video-files-list]"
+  );
+  const uploadingVideoFilesContainer = videoSectionContainer.querySelector(
+    "[data-uploading-video-files]"
+  );
+
+  const uploadingVideoFilesList = uploadingCodeFilesContainer.querySelector(
+    "[data-uploading-video-files-list]"
   );
 
   function updateRequiredFileInfoState(state) {
@@ -874,6 +892,8 @@ const handleFileSelection = (() => {
     );
     uploadCodefilesChoiceBtn.setAttribute("disabled", "true");
     uploadVideofilesChoiceBtn.removeAttribute("disabled");
+    videoSectionContainer.classList.remove("active");
+    codeSectionContainer.classList.add("active");
   }
 
   function switchChoiceToVideo() {
@@ -894,6 +914,8 @@ const handleFileSelection = (() => {
     );
     uploadVideofilesChoiceBtn.setAttribute("disabled", "true");
     uploadCodefilesChoiceBtn.removeAttribute("disabled");
+    videoSectionContainer.classList.add("active");
+    codeSectionContainer.classList.remove("active");
   }
 
   function computeCodefilesInputState(state) {
@@ -908,6 +930,27 @@ const handleFileSelection = (() => {
         codeFilesInput.setAttribute("accept", ".c");
     }
   }
+
+  function updateCodeFileSelectionUi() {
+    selectedCodeFilesContainer.classList.add("active");
+    codeSectionContainer.classList.add("active");
+  }
+
+  function updateVideoFileSelectionUi() {
+    selectedVideoFilesContainer.classList.add("active");
+    videoSectionContainer.classList.add("active");
+  }
+
+  function updateUiOnFileAdded() {
+    const fileChoice = uploadChoiceState.getState();
+    fileChoice === "code"
+      ? updateCodeFileSelectionUi()
+      : updateVideoFileSelectionUi();
+  }
+
+  // function updateUiOnFileRemoved(){
+
+  // }
 
   function handleFileSelection(files) {
     const fileChoice = uploadChoiceState.getState();
@@ -927,35 +970,13 @@ const handleFileSelection = (() => {
           });
           addFileToList(file);
         }
-        selectedCodeFiles.setState(selectedCodeFiles);
+        selectedCodeFilesState.setState(selectedCodeFiles);
       }
-      // for (let file of files) {
-      //   const existingIndex = selectedCodeFiles.findIndex(
-      //     (existingFile) => existingFile === file.name
-      //   );
-      //   if (existingIndex !== 1) {
-      //     selectedCodeFiles.splice(existingIndex, 1, file);
-      //     selectedCodeFilesState.setState(selectedCodeFiles);
-      //   } else {
-      //     selectedCodeFiles.push(file);
-      //     selectedCodeFilesState.setState(selectedCodeFiles);
-      //   }
-      // }
+
       codeFilesInput.value = "";
     } else {
       const selectedVideoFiles = selectedVideoFilesState.getState();
-      // for (let file of files) {
-      //   const existingIndex = selectedVideoFiles.findIndex(
-      //     (existingFile) => existingFile === file.name
-      //   );
-      //   if (existingIndex !== 1) {
-      //     selectedVideoFiles.splice(existingIndex, 1, file);
-      //     selectedVideoFilesState.setState(selectedVideoFiles);
-      //   } else {
-      //     selectedVideoFiles.push(file);
-      //     selectedVideoFilesState.setState(selectedVideoFiles);
-      //   }
-      // }
+
       for (let file of files) {
         if (selectedVideoFiles.has(file.name)) {
           selectedVideoFiles[file.name] = {
@@ -970,10 +991,11 @@ const handleFileSelection = (() => {
           });
           addFileToList(file);
         }
-        selectedVideoFiles.setState(selectedVideoFiles);
+        selectedVideoFilesState.setState(selectedVideoFiles);
       }
       videoFilesInput.value = "";
     }
+    updateUiOnFileAdded();
   }
 
   function createFilelistItem(file) {
@@ -1009,6 +1031,7 @@ const handleFileSelection = (() => {
     const li = document.createElement("li");
     li.classList.add("selected-file-list-item");
     li.setAttribute("data-selected-files-list-item", true);
+    li.dataset.fileName = file.name;
     li.innerHTML = `
         <div class="selected-file-list-item-svg">
          ${fileChoice === "code" ? codeFileSvg : videoFileSvg}
@@ -1018,7 +1041,7 @@ const handleFileSelection = (() => {
             data-selected-file-list-item-name
             class="selected-file-list-item-name"
           >
-            test file name
+            ${file.name}
           </p>
           <div class="selected-file-list-buttons-section">
             <button
@@ -1026,6 +1049,7 @@ const handleFileSelection = (() => {
               data-select-assignment-number-button
             ></button>
             <button
+              type="button"
               class="delete-selected-file-button selected-file-list-button"
               data-delete-selected-file-button
             >
@@ -1048,7 +1072,7 @@ const handleFileSelection = (() => {
         </div>`;
 
     const deleteFileButton = li.querySelector(
-      "[data-slelected-file-delete-button]"
+      "[data-delete-selected-file-button]"
     );
     deleteFileButton.addEventListener("click", () => {
       removeSelectedFile(file.name);
@@ -1065,16 +1089,16 @@ const handleFileSelection = (() => {
     const fileChoice = uploadChoiceState.getState();
     const li = createFilelistItem(file);
     fileChoice === "code"
-      ? selelecedCodeFilesList.appendChild(li)
+      ? selectedCodeFilesList.appendChild(li)
       : selectedVideoFilesList.appendChild(li);
   }
 
   function updateFileListItem(fileName) {
     const fileChoice = uploadChoiceState.getState();
-    const listItems = null;
+    let listItems = null;
 
     fileChoice === "code"
-      ? (listItems = selelecedCodeFilesList.querySelectorAll(
+      ? (listItems = selectedCodeFilesList.querySelectorAll(
           "[data-selected-files-list-item]"
         ))
       : (listItems = selectedVideoFilesList.querySelectorAll(
@@ -1082,12 +1106,34 @@ const handleFileSelection = (() => {
         ));
 
     listItems.forEach((item) => {
-      const fileNameElement = item.querySelector("[data-selected-file-name]");
+      const fileNameElement = item.querySelector(
+        "[data-selected-file-list-item-name]"
+      );
 
       if (fileNameElement.textContent === fileName) {
         fileNameElement.textContent = fileName;
       }
     });
+  }
+  function removeSelectedFile(fileName) {
+    const fileChoice = uploadChoiceState.getState();
+    const selectedCodeFiles = selectedCodeFilesState.getState();
+    const selectedVideoFiles = selectedVideoFilesState.getState();
+    if (fileChoice === "code") {
+      const listItem = Array.from(selectedCodeFilesList.children).filter(
+        (item) => item.dataset.fileName === fileName
+      );
+      selectedCodeFilesList.removeChild(listItem[0]);
+      selectedCodeFiles.delete(fileName);
+      selectedCodeFilesState.setState(selectedCodeFiles);
+    } else {
+      const listItem = Array.from(selectedVideoFilesList.children).filter(
+        (item) => item.dataset.fileName === fileName
+      );
+      selectedVideoFilesList.removeChild(listItem[0]);
+      selectedVideoFiles.delete(fileName);
+      selectedVideoFilesState.setState(selectedVideoFiles);
+    }
   }
 
   function initializeSubscribers() {
@@ -1135,6 +1181,14 @@ const handleFileSelection = (() => {
     videoDropzoneFilePicker.addEventListener("click", () => {
       videoFilesInput.click();
     });
+
+    codeFilesInput.addEventListener("change", (event) => {
+      handleFileSelection(event.target.files);
+    });
+
+    videoFilesInput.addEventListener("change", (event) => {
+      handleFileSelection(event.target.files);
+    });
   }
 
   return {
@@ -1147,3 +1201,102 @@ const handleFileSelection = (() => {
 })();
 
 handleFileSelection.init();
+
+const assignmentNumberSelectionModalFactory = () => {
+  function createModal(type) {
+    const modal = document.createElement("div");
+    modal.className = "assignment-number-picker-modal";
+    modal.innerHTML = `
+            <div class="assigment-number-picker-grid" data-assigment-number-picker-grid></div>
+        `;
+    modal.dataset.pickerType = type;
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function initializeNumbers(modal, maxNumber) {
+    const grid = modal.querySelector("[assigment-number-picker-grid]");
+    grid.innerHTML = "";
+
+    for (let i = 1; i <= maxNumber; i++) {
+      const btn = document.createElement("button");
+      btn.className = "number-btn";
+      btn.dataset.assignmentNumber = i;
+      btn.textContent = i;
+      grid.appendChild(btn);
+    }
+  }
+  return { createModal, initializeNumbers };
+};
+
+const createTracker = () => {
+  const assignments = new Map();
+  const subscribers = [];
+
+  function getAssigments() {
+    return assignments;
+  }
+
+  function getAssigment(fileId) {
+    return assigmentType.get(fileId);
+  }
+
+  function assignNumber(fileId, number) {
+    assignments.set(fileId, number);
+    notify({ type: "assign", fileId, number });
+  }
+
+  function unassignNumber(fileId) {
+    const assignment = assignments.get(fileId);
+    if (assignment) {
+      assignments.delete(fileId);
+      notify({ type: "unassign", fileId });
+    }
+  }
+
+  function isNumberUsed(number) {
+    for (const [_, assignment] of assignments) {
+      if (assignment === number) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function getNumberReason(number) {
+    for (const [fileId, assignment] of assignments) {
+      if (assignment === number) {
+        return `Assigned to file: ${fileId}`;
+      }
+    }
+    return `Assigment submitted more than twice and can no longer be submitted`;
+  }
+
+  function subscribe(fn) {
+    subscribers.push(fn);
+    return () => subscribers.filter((sub) => sub !== fn);
+  }
+
+  function notify(data) {
+    subscribers.forEach((fn) => fn(data));
+  }
+
+  return {
+    getAssigments,
+    subscribe,
+    notify
+  };
+};
+
+const assignmentNumberTracker = (type) => {
+  const trackers = {
+    code: createTracker(),
+    video: createTracker()
+  };
+
+  if (!trackers[type]) {
+    throw new Error(`Unsupported type: ${type}`);
+  }
+
+  return trackers[type];
+};
