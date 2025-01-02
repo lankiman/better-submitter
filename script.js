@@ -38,7 +38,49 @@ const createStateManager = (initialState = null, isDynamic = false) => {
 
 const userState = createStateManager(null);
 const userIdState = createStateManager("");
-const selectedCourseState = createStateManager("Java");
+const selectedCourseState = createStateManager("Python");
+const assignmentMetaDataState = createStateManager({});
+
+let codeAssignmentNumberPicker = null;
+let videoAssignmentNumberPicker = null;
+
+assignmentMetaDataState.subscribe(
+  ({ maxAssignmentNumber, submittableCodeFiles, submittableVideoFiles }) => {
+    codeAssignmentNumberPicker = createNumberPicker(
+      "code",
+      maxAssignmentNumber,
+      submittableCodeFiles
+    );
+
+    videoAssignmentNumberPicker = createNumberPicker(
+      "video",
+      maxAssignmentNumber,
+      submittableVideoFiles
+    );
+  }
+);
+
+function computeAssignmentMetaDataRequestData(value) {
+  let requestData = {};
+  requestData["studentId"] = getCurrentStudentId();
+  requestData["assignmentType"] = value;
+  return requestData;
+}
+
+function updateAssignmentMetaDataState(data) {
+  assignmentMetaDataState.setState(data);
+}
+
+async function fetchAndUpdateAssignmentMetaDataState(data) {
+  try {
+    const result = await getCourseAssignmentMetadata(data);
+    updateAssignmentMetaDataState(result.data);
+    console.log(result);
+  } catch (error) {
+    console.log("error fetching an assignment data", error);
+    showToast("An error eccured", "error");
+  }
+}
 
 function setCurrentStudentData(data) {
   userState.setState(data);
@@ -51,6 +93,10 @@ function getCurrentUserData() {
 
 function getCurrentStudentId() {
   return userIdState.getState();
+}
+
+function getCurrentUserDepartment() {
+  return userState.getState().department;
 }
 
 //general funcions
@@ -172,25 +218,30 @@ function showToast(message, type) {
   return handleToastMessage.displayToast(message, type);
 }
 
-function getCourseAssignmentMetadata(assigmentType) {
-  const studentId = getCurrentUserData().studentId;
-  let requestData = {};
-  requestData["studentId"] = studentId;
-  requestData["assignmentType"] = assigmentType;
+function getCourseAssignmentMetadata(requestData) {
+  return new Promise((resolve, reject) => {
+    const req = new XMLHttpRequest();
+    req.open(
+      "GET",
+      `${API_BASE_URL}/student/?studentId=${requestData.studentId}&assignmentType=${requestData.assignmentType}`,
+      true
+    );
 
-  try {
-    const response =
-      handleChooseCourseStep.getCourseAssignmentMetadata(requestData);
-    console.log(response);
-    return response;
-  } catch (error) {
-    console.log("error while getting assigment metada", error);
-    showToast("An error occured", "error");
-  }
-}
+    req.onload = function () {
+      if (req.status == 200) {
+        let response = JSON.parse(req.responseText);
+        resolve(response);
+      } else {
+        reject(req.responseType);
+      }
+    };
 
-function getFetchedAssignmentMetadata() {
-  return handleChooseCourseStep.assignmentMetadata;
+    req.onerror = function () {
+      reject(this.responseText);
+    };
+
+    req.send();
+  });
 }
 
 //handle toast message
@@ -365,6 +416,15 @@ const handleFirstStep = (() => {
           response.data.department == "Electrical"
         ) {
           computeFormToShow(firstStepContainer, "choose-course", "next");
+        } else if (
+          response.status == "Present" &&
+          response.data.department !== "Electrical"
+        ) {
+          const metaDataRequestData = computeAssignmentMetaDataRequestData(
+            selectedCourseState.getState()
+          );
+          fetchAndUpdateAssignmentMetaDataState(metaDataRequestData);
+          computeFormToShow(firstStepContainer, "file-upload", "next");
         }
       } catch (error) {
         updateUItoDefault();
@@ -586,6 +646,19 @@ const handleStudentDetailsStep = (() => {
       } else {
         showToast(response.message, "success");
         setCurrentStudentData(response.data);
+        if (data.department === "Electrical") {
+          computeFormToShow(
+            studentDetailsStepContainer,
+            "choose-course",
+            "next"
+          );
+        } else {
+          computeFormToShow(studentDetailsStepContainer, "file-upload", "next");
+        }
+        // const metaDataRequestData = computeAssignmentMetaDataRequestData(
+        //   selectedCourseState.getState()
+        // );
+        // fetchAndUpdateAssignmentMetaDataState(metaDataRequestData);
       }
       updateUItoDefault();
     } catch (error) {
@@ -695,13 +768,6 @@ const handleChooseCourseStep = (() => {
 
   let proceededBefore = false;
 
-  function computeRequestData(value) {
-    let requestData = {};
-    requestData["studentId"] = getCurrentStudentId();
-    requestData["assignmentType"] = value;
-    return requestData;
-  }
-
   function validateChooseCourseDropdown(value) {
     if (value == "") {
       chooseCourseErrorMessageField.classList.add("active");
@@ -720,12 +786,16 @@ const handleChooseCourseStep = (() => {
     proceededBefore = true;
     const isValidChoice = validateChooseCourseDropdown(value);
     if (isValidChoice) {
+      selectedCourseState.setState(value);
       updateUIonProceed();
       try {
-        const requestData = computeRequestData(value);
-        await getCourseAssignmentMetadata(requestData);
+        const requestData = computeAssignmentMetaDataRequestData(value);
+        const result = await getCourseAssignmentMetadata(requestData);
         proceededBefore = false;
+        console.log(result);
+        updateAssignmentMetaDataState(result.data);
         updateUItoDefault();
+        computeFormToShow(chooseCourseStepContainer, "file-upload", "next");
       } catch (error) {
         updateUItoDefault();
         console.log("error fetching an assignment data", error);
@@ -891,7 +961,9 @@ const createTooltipManager = () => {
     tooltip.textContent = reason;
 
     const rect = element.getBoundingClientRect();
-    tooltip.style.top = `${rect.bottom + window.scrollY + 10}px`;
+    tooltip.style.top = `${
+      rect.top + window.scrollY - tooltip.offsetHeight - 5
+    }px`;
     tooltip.style.left = `${rect.left + window.scrollX}px`;
     tooltip.style.display = "block";
   }
@@ -1070,12 +1142,6 @@ const createNumberPicker = (type, maxNumber, submitableNumbers) => {
   };
 };
 
-let codeAssignmentNumberPicker = createNumberPicker(
-  uploadChoiceState.getState(),
-  2,
-  []
-);
-
 const handleFileSelection = (() => {
   const fileUploadStepContainer = document.querySelector(
     "[data-step-file-upload]"
@@ -1159,6 +1225,9 @@ const handleFileSelection = (() => {
   const uploadingVideoFilesList = uploadingCodeFilesContainer.querySelector(
     "[data-uploading-video-files-list]"
   );
+
+  const backButton =
+    fileUploadStepContainer.querySelector("[data-back-button]");
 
   function updateRequiredFileInfoState(state) {
     requiredFileInfoMobile.textContent = `file must be a ${state} file, max size of 1mb`;
@@ -1394,6 +1463,9 @@ const handleFileSelection = (() => {
         case "code":
           codeAssignmentNumberPicker.handleFileDeleteUnassign(file.name);
           break;
+        case "video":
+          videoAssignmentNumberPicker.handleFileDeleteUnassign(file.name);
+          break;
       }
     });
 
@@ -1407,6 +1479,16 @@ const handleFileSelection = (() => {
             codeAssignmentNumberPicker.hideModal();
           } else {
             codeAssignmentNumberPicker.showModal(
+              file.name,
+              selectAssignmentNumberButton.getBoundingClientRect()
+            );
+          }
+          break;
+        case "video":
+          if (videoAssignmentNumberPicker.getActiveFileId() === file.name) {
+            videoAssignmentNumberPicker.hideModal();
+          } else {
+            videoAssignmentNumberPicker.showModal(
               file.name,
               selectAssignmentNumberButton.getBoundingClientRect()
             );
@@ -1479,6 +1561,7 @@ const handleFileSelection = (() => {
 
     const codeFileInputUnsubscribe = selectedCourseState.subscribe((state) => {
       computeCodefilesInputState(state);
+      computeRequiredFileInfoState(uploadChoiceState.getState());
     });
 
     const currentUserDataUnsubscribe = userState.subscribe((state) => {
@@ -1494,6 +1577,13 @@ const handleFileSelection = (() => {
   }
 
   function initializeEventListiners() {
+    backButton.addEventListener("click", () => {
+      const currentStudentDepartment = getCurrentUserDepartment();
+      currentStudentDepartment === "Electrical"
+        ? computeFormToShow(fileUploadStepContainer, "choose-course", "prev")
+        : computeFormToShow(fileUploadStepContainer, "first", "prev");
+    });
+
     uploadCodefilesChoiceBtn.addEventListener("click", () => {
       switchChoiceToCode();
     });
