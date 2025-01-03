@@ -300,6 +300,7 @@ const handleResetForm = (() => {
     form.reset();
     resetFormFileSelectionState();
     resetFormStepToDefault();
+    handleFileSelection.resetFileSelectionHandler();
     uploadChoiceState.resetState();
   }
 
@@ -1503,8 +1504,6 @@ const handleFileSelection = (() => {
 
   // }
 
-  function clearValidationErrorUionFileRemoved() {}
-
   function handleFileSelection(files) {
     const fileChoice = uploadChoiceState.getState();
     if (fileChoice == "code") {
@@ -1896,6 +1895,25 @@ const handleFileSelection = (() => {
     }
   }
 
+  function updateCodeValidationErrorUIState() {
+    const codeValidationErrors = codeFileValidationErrorState.getState();
+
+    console.log(codeValidationErrors);
+
+    const onlyNumberErrorCount = [...codeValidationErrors].filter(
+      ([_, errors]) =>
+        errors?.length === 1 &&
+        errors[0] === "Please select assignment number for file"
+    ).length;
+
+    if (
+      codeValidationErrors.size > 0 &&
+      onlyNumberErrorCount === codeValidationErrors.size
+    ) {
+      showToast("Please select assignment number for files", "error");
+    }
+  }
+
   function resetAttemptedValidationStates() {
     hasAttemptedCodeValidation = false;
     hasAttemptedVideoValidation = false;
@@ -2043,7 +2061,6 @@ const handleFileSelection = (() => {
 
       if (hasAttemptedCodeValidation) {
         for (const [fileName, fileObject] of state) {
-          console.log(validatedCodeFiles);
           if (validatedCodeFiles.has(fileName)) {
             if (fileObject.assignmentNumber != null) {
               clearNumberValidationError(fileName, "code");
@@ -2148,6 +2165,7 @@ const handleFileSelection = (() => {
     const fileChoice = uploadChoiceState.getState();
     if (fileChoice === "code") {
       validateSelectedCodeFiles();
+      updateCodeValidationErrorUIState();
       hasAttemptedCodeValidation = true;
     } else if (fileChoice === "video") {
       validateSelectedVideoFiles();
@@ -2173,6 +2191,7 @@ const handleFileSelection = (() => {
       }
       handleResetForm.resetFormFileSelectionState();
       resetAttemptedValidationStates();
+      resetValidatedFilesSets();
     });
 
     uploadButton.addEventListener("click", () => {
@@ -2212,12 +2231,18 @@ const handleFileSelection = (() => {
     });
   }
 
+  function handleSelectionInternalReset() {
+    resetAttemptedValidationStates();
+    resetValidatedFilesSets();
+  }
+
   return {
     init: function () {
       initializeSubscribers();
       initializeEventListiners();
       initializeDefaults();
-    }
+    },
+    resetFileSelectionHandler: handleSelectionInternalReset
   };
 })();
 
