@@ -101,7 +101,8 @@ const videoFileValidationErrorState = createStateManager(new Map());
 const uploadChoiceState = createStateManager("code");
 const selectedCodeFilesState = createStateManager(new Map());
 const selectedVideoFilesState = createStateManager(new Map());
-const fileNumberButtons = new Map();
+const codeFileNumberButtons = new Map();
+const videoFileNumberButtons = new Map();
 const maxVideoFileSize = 100 * 1024 * 1024; // 100 MB
 const maxCodeFileSize = 1 * 1024 * 1024; // 1 MB
 
@@ -567,6 +568,7 @@ const handleFirstStep = (() => {
         proceededBefore = false;
       } catch (error) {
         updateUItoDefault();
+        showToast("An error occcured", "error");
         console.error("Error checking for student request:", error);
       }
     }
@@ -1156,6 +1158,9 @@ const createNumberPicker = (type, maxNumber, notSubmittableNumbers) => {
   tooltipManger.setupTooltipEvents(modal);
   tooltipManger.setModalElement(modal);
 
+  const fileNumberButtons =
+    type === "code" ? codeFileNumberButtons : videoFileNumberButtons;
+
   function getModalShownState() {
     return modalShownState;
   }
@@ -1223,6 +1228,7 @@ const createNumberPicker = (type, maxNumber, notSubmittableNumbers) => {
   assignmentTracker.subscribe(({ actionType, fileId, number }) => {
     if (actionType === "assign" || actionType === "unassign") {
       updateNumbers();
+
       const button = fileNumberButtons.get(fileId);
       if (button) {
         button.textContent = actionType === "assign" ? `${number}` : "#";
@@ -1386,8 +1392,11 @@ const handleFileSelection = (() => {
     "[data-spinner-section]"
   );
 
-  let hasAttemptedCodeSubmission = false;
-  let hasAttemptedVideoSubmission = false;
+  let validatedCodeFiles = new Set();
+  let validatedVideoFiles = new Set();
+
+  let hasAttemptedCodeValidation = false;
+  let hasAttemptedVideoValidation = false;
 
   function updateRequiredFileInfoState(state) {
     requiredFileInfoMobile.textContent = `file must be a ${state} file, max size of 1mb`;
@@ -1494,10 +1503,18 @@ const handleFileSelection = (() => {
 
   // }
 
+  function clearValidationErrorUionFileRemoved() {}
+
   function handleFileSelection(files) {
     const fileChoice = uploadChoiceState.getState();
     if (fileChoice == "code") {
       const selectedCodeFiles = selectedCodeFilesState.getState();
+      const maxAssignmentNumber =
+        assignmentMetaDataState.getState().maxAssignmentNumber;
+      if (selectedCodeFiles.size == maxAssignmentNumber) {
+        showToast("Cannot Select more than max assignment number", "info");
+        return;
+      }
       for (let file of files) {
         if (selectedCodeFiles.has(file.name)) {
           selectedCodeFiles[file.name] = {
@@ -1621,14 +1638,6 @@ const handleFileSelection = (() => {
     );
     deleteFileButton.addEventListener("click", () => {
       removeSelectedFile(file.name);
-      switch (fileChoice) {
-        case "code":
-          codeAssignmentNumberPicker.handleFileDeleteUnassign(file.name);
-          break;
-        case "video":
-          videoAssignmentNumberPicker.handleFileDeleteUnassign(file.name);
-          break;
-      }
     });
 
     const selectAssignmentNumberButton = li.querySelector(
@@ -1659,6 +1668,8 @@ const handleFileSelection = (() => {
           break;
       }
     });
+    const fileNumberButtons =
+      fileChoice === "code" ? codeFileNumberButtons : videoFileNumberButtons;
     fileNumberButtons.set(file.name, selectAssignmentNumberButton);
     return li;
   }
@@ -1696,13 +1707,23 @@ const handleFileSelection = (() => {
     const fileChoice = uploadChoiceState.getState();
     const selectedCodeFiles = selectedCodeFilesState.getState();
     const selectedVideoFiles = selectedVideoFilesState.getState();
+    const codeValidationErrors = codeFileValidationErrorState.getState();
+    const videoValidationErrors = videoFileValidationErrorState.getState();
     if (fileChoice === "code") {
+      if (hasAttemptedCodeValidation) {
+        validatedCodeFiles.delete(fileName);
+      }
       const listItem = Array.from(selectedCodeFilesList.children).filter(
         (item) => item.dataset.fileName === fileName
       );
       selectedCodeFilesList.removeChild(listItem[0]);
       selectedCodeFiles.delete(fileName);
       selectedCodeFilesState.setState(selectedCodeFiles);
+      codeAssignmentNumberPicker.handleFileDeleteUnassign(fileName);
+      if (codeValidationErrors.has(fileName)) {
+        codeValidationErrors.delete(fileName);
+        codeFileValidationErrorState.setState(codeValidationErrors);
+      }
     } else {
       const listItem = Array.from(selectedVideoFilesList.children).filter(
         (item) => item.dataset.fileName === fileName
@@ -1710,6 +1731,16 @@ const handleFileSelection = (() => {
       selectedVideoFilesList.removeChild(listItem[0]);
       selectedVideoFiles.delete(fileName);
       selectedVideoFilesState.setState(selectedVideoFiles);
+      videoAssignmentNumberPicker.handleFileDeleteUnassign(fileName);
+
+      if (hasAttemptedVideoValidation) {
+        validatedVideoFiles.delete(fileName);
+      }
+
+      if (videoValidationErrors.has(fileName)) {
+        videoValidationErrors.delete(fileName);
+        videoFileValidationErrorState.setState(videoValidationErrors);
+      }
     }
   }
 
@@ -1832,6 +1863,7 @@ const handleFileSelection = (() => {
         errors.push(fileSizeResult);
       }
       addError(fileName, errors, "code");
+      validatedCodeFiles.add(fileName);
     }
   }
 
@@ -1864,10 +1896,20 @@ const handleFileSelection = (() => {
     }
   }
 
-  function clearValidationError(fileName, fileType) {
-    // if (!hasAttemptedSubmission) {
-    //   return;
-    // }
+  function resetAttemptedValidationStates() {
+    hasAttemptedCodeValidation = false;
+    hasAttemptedVideoValidation = false;
+  }
+
+  function resetValidatedFilesSets() {
+    validatedCodeFiles = new Set();
+    validatedVideoFiles = new Set();
+  }
+
+  function populateNumberValidationError(fileName, fileType) {
+    if (fileType === "code" && !hasAttemptedCodeValidation) return;
+    if (fileType === "video" && !hasAttemptedVideoValidation) return;
+
     const errorState =
       fileType === "code"
         ? codeFileValidationErrorState
@@ -1875,10 +1917,30 @@ const handleFileSelection = (() => {
 
     const errors = errorState.getState();
 
-    if (!errors.has(fileName)) {
-      return;
+    if (errors.has(fileName)) {
+      const errorList = errors.get(fileName);
+      if (!errorList.includes("Please select assignment number for file")) {
+        errorList.push("Please select assignment number for file");
+        errors.set(fileName, errorList);
+      }
+    } else {
+      errors.set(fileName, ["Please select assignment number for file"]);
     }
 
+    errorState.setState(errors);
+  }
+
+  function clearNumberValidationError(fileName, fileType) {
+    if (fileType === "code" && !hasAttemptedCodeValidation) return;
+    if (fileType === "video" && !hasAttemptedVideoValidation) return;
+
+    const errorState =
+      fileType === "code"
+        ? codeFileValidationErrorState
+        : videoFileValidationErrorState;
+
+    const errors = errorState.getState();
+    if (!errors.has(fileName)) return;
     const updatedErrors = errors
       .get(fileName)
       .filter(
@@ -1893,6 +1955,36 @@ const handleFileSelection = (() => {
 
     errorState.setState(errors);
   }
+
+  // function clearValidationError(fileName, fileType) {
+  //   // if (!hasAttemptedSubmission) {
+  //   //   return;
+  //   // }
+  //   const errorState =
+  //     fileType === "code"
+  //       ? codeFileValidationErrorState
+  //       : videoFileValidationErrorState;
+
+  //   const errors = errorState.getState();
+
+  //   if (!errors.has(fileName)) {
+  //     return;
+  //   }
+
+  //   const updatedErrors = errors
+  //     .get(fileName)
+  //     .filter(
+  //       (error) => !error.includes("Please select assignment number for file")
+  //     );
+
+  //   if (updatedErrors.length === 0) {
+  //     errors.delete(fileName);
+  //   } else {
+  //     errors.set(fileName, updatedErrors);
+  //   }
+
+  //   errorState.setState(errors);
+  // }
 
   function clearCodeValidationErrors() {
     const errorMap = codeFileValidationErrorState.getState();
@@ -1948,6 +2040,19 @@ const handleFileSelection = (() => {
           uploadButton.style.display = "none";
         }
       }
+
+      if (hasAttemptedCodeValidation) {
+        for (const [fileName, fileObject] of state) {
+          console.log(validatedCodeFiles);
+          if (validatedCodeFiles.has(fileName)) {
+            if (fileObject.assignmentNumber != null) {
+              clearNumberValidationError(fileName, "code");
+            } else {
+              populateNumberValidationError(fileName, "code");
+            }
+          }
+        }
+      }
     });
 
     selectedVideoFilesState.subscribe((state) => {
@@ -1957,6 +2062,18 @@ const handleFileSelection = (() => {
           uploadButton.style.display = "flex";
         } else {
           uploadButton.style.display = "none";
+        }
+      }
+
+      if (hasAttemptedVideoValidation) {
+        for (const [fileName, fileObject] of state) {
+          if (validatedVideoFiles.has(fileName)) {
+            if (fileObject.assignmentNumber != null) {
+              clearNumberValidationError(fileName, "video");
+            } else {
+              populateNumberValidationError(fileName, "video");
+            }
+          }
         }
       }
     });
@@ -2027,6 +2144,17 @@ const handleFileSelection = (() => {
     });
   }
 
+  function handleFileUploadProceed() {
+    const fileChoice = uploadChoiceState.getState();
+    if (fileChoice === "code") {
+      validateSelectedCodeFiles();
+      hasAttemptedCodeValidation = true;
+    } else if (fileChoice === "video") {
+      validateSelectedVideoFiles();
+      hasAttemptedVideoValidation = true;
+    }
+  }
+
   function initializeDefaults() {
     const selectedCourse = selectedCourseState.getState();
     const uploadChoice = uploadChoiceState.getState();
@@ -2044,10 +2172,11 @@ const handleFileSelection = (() => {
         computeFormToShow(fileUploadStepContainer, "first", "prev");
       }
       handleResetForm.resetFormFileSelectionState();
+      resetAttemptedValidationStates();
     });
 
     uploadButton.addEventListener("click", () => {
-      validateSelectedCodeFiles();
+      handleFileUploadProceed();
     });
 
     uploadCodefilesChoiceBtn.addEventListener("click", () => {
