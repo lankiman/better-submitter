@@ -353,6 +353,29 @@
               file must be a .py file, max size of 1mb
             </p>
           </section>
+          <section data-validation-error-section class="error-message-section">
+            <div
+              data-validation-message
+              data-general-validation-error-message
+              class="general-validation-error-message"
+            >
+              <span>some files failed validation click</span>
+              <button
+                data-view-file-validation-errors-btn
+                class="btn view-file-validation-errors-btn validation-message"
+              >
+                view
+              </button>
+              <span>to view</span>
+            </div>
+            <p
+              data-validation-message
+              data-assignment-number-error-message
+              class="assigment-number-error-message validation-message"
+            >
+              please select assignment number for files
+            </p>
+          </section>
           <div data-file-selection-container class="file-selection-container">
             <div
               data-file-picker-container-mobile
@@ -522,10 +545,10 @@
             </section>
           </section>
         </div>
+        <!--Assignment Error Modal-->
+        <section></section>
       </form>
     </main>
-
-    <!--Assignment Error Modal-->
 
     <!--Toast Container Template-->
     <template data-toast-template>

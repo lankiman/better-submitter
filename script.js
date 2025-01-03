@@ -1393,6 +1393,14 @@ const handleFileSelection = (() => {
     "[data-spinner-section]"
   );
 
+  const viewValidationErrorMessages = fileUploadStepContainer.querySelector(
+    "[data-view-file-validation-errors-btn]"
+  );
+
+  const errorMessageSection = fileUploadStepContainer.querySelector(
+    "[data-validation-error-sectio]"
+  );
+
   let validatedCodeFiles = new Set();
   let validatedVideoFiles = new Set();
 
