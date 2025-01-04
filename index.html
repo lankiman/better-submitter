@@ -348,65 +348,67 @@
               Video Files
             </button>
           </section>
-          <section class="file-info-mobile">
-            <p data-file-info-mobile>
-              file must be a .py file, max size of 1mb
-            </p>
-          </section>
-          <section
-            data-validation-error-section
-            class="error-message-section active"
-          >
-            <div
-              data-validation-message
-              data-general-validation-error-message
-              class="validation-message general-validation-error-message"
+          <div data-info-section class="info-section active">
+            <section class="file-info-mobile">
+              <p data-file-info-mobile>
+                file must be a .py file, max size of 1mb
+              </p>
+            </section>
+            <section
+              data-validation-error-section
+              class="error-message-section active"
             >
-              <span>some files failed validation click</span>
-              <button
-                data-view-file-validation-errors-btn
-                class="btn view-file-validation-errors-btn validation-message"
+              <div
+                data-validation-message
+                data-general-validation-error-message
+                class="validation-message general-validation-error-message"
               >
-                view
-              </button>
-              <span>to view</span>
-            </div>
-            <p
-              data-validation-message
-              data-assignment-number-error-message
-              class="assigment-number-error-message validation-message"
-            >
-              please select assignment number for files
-            </p>
-          </section>
-          <div data-file-selection-container class="file-selection-container">
-            <div
-              data-file-picker-container-mobile
-              class="file-picker-container-mobile"
-            >
-              <button
-                type="button"
-                data-file-picker-button-mobile
-                class="file-picker-button-mobile"
-              >
-                <span>Add file</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="2"
-                  stroke="currentColor"
-                  class="size-6"
+                <span>some files failed validation click</span>
+                <button
+                  type="button"
+                  data-view-file-validation-errors-btn
+                  class="btn view-file-validation-errors-btn"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 0 0 2.25-2.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v2.25A2.25 2.25 0 0 0 6 10.5Zm0 9.75h2.25A2.25 2.25 0 0 0 10.5 18v-2.25a2.25 2.25 0 0 0-2.25-2.25H6a2.25 2.25 0 0 0-2.25 2.25V18A2.25 2.25 0 0 0 6 20.25Zm9.75-9.75H18a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 18 3.75h-2.25A2.25 2.25 0 0 0 13.5 6v2.25a2.25 2.25 0 0 0 2.25 2.25Z"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div
+                  view
+                </button>
+                <span>to view</span>
+              </div>
+              <p
+                data-validation-message
+                data-assignment-number-error-message
+                class="assigment-number-error-message validation-message"
+              >
+                please select assignment number for files
+              </p>
+            </section>
+            <div data-file-selection-container class="file-selection-container">
+              <div
+                data-file-picker-container-mobile
+                class="file-picker-container-mobile"
+              >
+                <button
+                  type="button"
+                  data-file-picker-button-mobile
+                  class="file-picker-button-mobile"
+                >
+                  <span>Add file</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    class="size-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 0 0 2.25-2.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v2.25A2.25 2.25 0 0 0 6 10.5Zm0 9.75h2.25A2.25 2.25 0 0 0 10.5 18v-2.25a2.25 2.25 0 0 0-2.25-2.25H6a2.25 2.25 0 0 0-2.25 2.25V18A2.25 2.25 0 0 0 6 20.25Zm9.75-9.75H18a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 18 3.75h-2.25A2.25 2.25 0 0 0 13.5 6v2.25a2.25 2.25 0 0 0 2.25 2.25Z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <!-- <div
               data-codefile-dropzone-container
               class="drag-drop-container active codefile-dropzone"
             >
@@ -483,6 +485,7 @@
                   file must be a .mp4 file, max size of 100mb
                 </p>
               </section>
+            </div> -->
             </div>
           </div>
           <div
@@ -549,7 +552,30 @@
           </section>
         </div>
         <!--Assignment Error Modal-->
-        <section></section>
+        <dialog
+          data-assignment-error-dialog-modal
+          class="dialog-modal assignment-error-dialog-modal"
+        >
+          <span
+            data-error-message-close-btn
+            class="assigment-dialog-close-button"
+            ><svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+            </svg>
+          </span>
+          <ul data-assignment-error-list class="assignment-error-list"></ul>
+        </dialog>
       </form>
     </main>
 
@@ -628,6 +654,8 @@
       </div>
     </template>
     <div data-toast-placeholder class="toast-placeholder"></div>
+    <!--Dailog template-->
+
     <dialog data-dialog-modal class="dialog-modal">
       <p data-dailog-message class="dialog-message"></p>
       <section class="dialog-buttons" data-dialog-buttons>

@@ -1393,7 +1393,7 @@ const handleFileSelection = (() => {
     "[data-spinner-section]"
   );
 
-  const viewValidationErrorMessages = fileUploadStepContainer.querySelector(
+  const viewValidationErrorMessagesBtn = fileUploadStepContainer.querySelector(
     "[data-view-file-validation-errors-btn]"
   );
 
@@ -1410,6 +1410,17 @@ const handleFileSelection = (() => {
     fileUploadStepContainer.querySelector(
       "[data-general-validation-error-message]"
     );
+
+  const assignmentErrorMessageDialog = document.querySelector(
+    "[ data-assignment-error-dialog-modal]"
+  );
+  const assignmentErrorMessageModalCloseBtn = document.querySelector(
+    "[data-error-message-close-btn]"
+  );
+
+  const assigmentErrorList = document.querySelector(
+    "[data-assignment-error-list]"
+  );
 
   let validatedCodeFiles = new Set();
   let validatedVideoFiles = new Set();
@@ -1912,6 +1923,7 @@ const handleFileSelection = (() => {
       }
       if (errors.length > 0) {
         addError(fileName, errors, "video");
+        validatedVideoFiles.add(fileName);
       }
     }
   }
@@ -1998,6 +2010,7 @@ const handleFileSelection = (() => {
   }
 
   function updateErrorValidationUIStates(toast) {
+    errorMessageSection.classList.add("active");
     const uploadChoice = uploadChoiceState.getState();
     if (uploadChoice === "code") {
       updateCodeValidationErrorUIState(toast);
@@ -2043,6 +2056,7 @@ const handleFileSelection = (() => {
     }
 
     errorState.setState(errors);
+
     updateNumberValidationErrorUI();
   }
 
@@ -2070,6 +2084,7 @@ const handleFileSelection = (() => {
     }
 
     errorState.setState(errors);
+
     updateNumberValidationErrorUI();
   }
 
@@ -2244,6 +2259,45 @@ const handleFileSelection = (() => {
     });
   }
 
+  function createErrorListItem() {
+    const li = document.createElement("li");
+    li.classList.add("error-message-list-item");
+    return li;
+  }
+
+  function createErrorFilenameHeader() {
+    const h4 = document.createElement("h4");
+    h4.classList.add("error-message-filename");
+    return h4;
+  }
+  function createErrorParagraphElement() {
+    const p = document.createElement("p");
+    p.classList.add("error-message-paragraph");
+    return p;
+  }
+
+  function generateValidationErrorMessageList() {
+    const fileChoice = uploadChoiceState.getState();
+
+    const errors =
+      fileChoice === "code"
+        ? codeFileValidationErrorState.getState()
+        : videoFileValidationErrorState.getState();
+
+    for (const [filename, errorList] of errors) {
+      const listItem = createErrorListItem();
+      const filenameHeader = createErrorFilenameHeader();
+      filenameHeader.textContent = filename;
+      listItem.appendChild(filenameHeader);
+      errorList.forEach((error) => {
+        const errorMessageParagraph = createErrorParagraphElement();
+        errorMessageParagraph.textContent = error;
+        listItem.appendChild(errorMessageParagraph);
+      });
+      assigmentErrorList.appendChild(listItem);
+    }
+  }
+
   function handleFileUploadProceed() {
     const fileChoice = uploadChoiceState.getState();
     if (fileChoice === "code") {
@@ -2275,6 +2329,7 @@ const handleFileSelection = (() => {
       handleResetForm.resetFormFileSelectionState();
       resetAttemptedValidationStates();
       resetValidatedFilesSets();
+      resetValidationUIStates();
     });
 
     uploadButton.addEventListener("click", () => {
@@ -2311,6 +2366,20 @@ const handleFileSelection = (() => {
 
     videoFilesInput.addEventListener("change", (event) => {
       handleFileSelection(event.target.files);
+    });
+
+    viewValidationErrorMessagesBtn.addEventListener("click", () => {
+      generateValidationErrorMessageList();
+      assignmentErrorMessageDialog.showModal();
+      assignmentErrorMessageDialog.classList.add("toast-in");
+      assignmentErrorMessageDialog.classList.remove("toast-out");
+    });
+
+    assignmentErrorMessageModalCloseBtn.addEventListener("click", () => {
+      assignmentErrorMessageDialog.close();
+      assigmentErrorList.innerHTML = "";
+      assignmentErrorMessageDialog.classList.remove("toast-in");
+      assignmentErrorMessageDialog.classList.add("toast-out");
     });
   }
 

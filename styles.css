@@ -19,15 +19,16 @@ body {
   justify-content: center;
   align-items: center;
   height: 100svh;
+  overflow: hidden;
   background-color: rgb(207, 203, 203);
+  padding-bottom: 4rem;
 }
 
 .container {
   min-height: 50%;
-  /* max-height: 9999px; */
+  max-height: 78%;
   overflow: hidden;
   width: 40%;
-  overflow: hidden;
   position: relative;
   padding: 2rem;
   border-radius: 0.5rem;
@@ -489,9 +490,9 @@ body {
   margin-bottom: 0.5rem;
 }
 
-.file-info-mobile {
+/* .file-info-mobile {
   display: none;
-}
+} */
 
 .file-info-mobile p {
   font-weight: bold;
@@ -512,9 +513,9 @@ body {
   outline: none;
   animation: borderDash 4s linear infinite;
 }
-.drag-drop-container.active {
+/* .drag-drop-container.active {
   display: flex;
-}
+} */
 .drag-drop-container.fade-in {
   animation: toastIn 0.4s ease forwards;
 }
@@ -552,9 +553,9 @@ body {
   opacity: 0.7;
 }
 
-.file-picker-container-mobile {
+/* .file-picker-container-mobile {
   display: none;
-}
+} */
 
 .file-picker-button-mobile {
   display: flex;
@@ -577,13 +578,60 @@ body {
 .file-picker-button-mobile:hover {
   color: gray;
 }
+.selected-files-list {
+  overflow-y: auto;
+  max-height: 15rem;
+  width: 100%;
+  scrollbar-width: thin;
+}
+
+/* Firefox scrollbar */
+.selected-files-list,
+.assignment-error-modal {
+  scrollbar-width: thin;
+  scrollbar-color: #64748b #f1f5f9;
+}
+
+/* Webkit scrollbar */
+.selected-files-list::-webkit-scrollbar,
+.assignment-error-modal::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+/* Hide scrollbar buttons (arrows) */
+.selected-files-list::-webkit-scrollbar-button,
+.assignment-error-modal::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Track */
+.selected-files-list::-webkit-scrollbar-track,
+.assignment-error-modal::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+/* Thumb */
+.selected-files-list::-webkit-scrollbar-thumb,
+.assignment-error-modal::-webkit-scrollbar-thumb {
+  background: #64748b;
+  border-radius: 4px;
+  min-height: 40px;
+}
+
+/* Thumb hover */
+.selected-files-list::-webkit-scrollbar-thumb:hover,
+.assignment-error-modal::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
 .selected-file-list-item {
   display: flex;
   align-items: center;
   padding: 0.2rem;
   margin-top: 0.4rem;
   background-color: rgb(223, 221, 221);
-  width: 100%;
+  /* width: 100%; */
   border-radius: 0.5rem;
   transition: all 0.2s ease;
   border: 1px solid lightgrey;
@@ -724,7 +772,7 @@ body {
 }
 
 .upload-btn {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
 }
 
 .error-message-section {
@@ -749,9 +797,51 @@ body {
   box-shadow: var(--shadow-md);
   border: 0.5px solid black;
   outline: none;
+  border-radius: 0.2rem;
+  border: none;
   background-color: whitesmoke;
   cursor: pointer;
   padding: 0.2rem 0.5rem;
+}
+.general-validation-error-message {
+  align-items: center;
+}
+
+.assignment-error-dialog-modal {
+  overflow: auto;
+  flex-direction: column;
+  justify-content: start;
+  height: max-content;
+  max-height: 50%;
+  gap: 0.5rem;
+  padding: auto;
+}
+.assigment-dialog-close-button {
+  /* background-color: green; */
+}
+.assigment-dialog-close-button svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: gray;
+  display: block;
+  margin-left: auto;
+}
+
+.assigment-dialog-close-button svg:hover {
+  color: black;
+}
+.assignment-error-list {
+  font-size: small;
+  display: block;
+  margin: 0;
+  padding-left: 0.5rem;
+}
+.assignment-error-list li h4 {
+  margin: 0;
+  color: red;
+}
+.assignment-error-list p {
+  margin: 0.2rem;
 }
 
 /*Animation Keyframes*/
@@ -946,6 +1036,7 @@ body {
   .toast-placeholder {
     right: 0%;
     left: 0%;
+    top: 5rem;
   }
   .toast-container {
     width: 95%;
@@ -960,7 +1051,7 @@ body {
     width: 100%;
   }
 
-  .file-info-mobile {
+  /* .file-info-mobile {
     display: flex;
   }
   .drag-drop-container.active {
@@ -973,9 +1064,12 @@ body {
 
   .file-picker-container-mobile {
     display: flex;
-  }
+  } */
 
   .selected-file-list-item-name {
     font-size: x-small;
+  }
+  .container {
+    max-height: 70%;
   }
 }
