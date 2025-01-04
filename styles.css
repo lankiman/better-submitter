@@ -730,9 +730,14 @@ body {
 .error-message-section {
   color: red;
   font-size: small;
+  display: none;
+}
+
+.error-message-section.active {
+  display: block;
 }
 .validation-message {
-  /* display: none; */
+  display: none;
 }
 
 .validation-message.active {

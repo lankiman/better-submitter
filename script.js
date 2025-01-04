@@ -1398,8 +1398,18 @@ const handleFileSelection = (() => {
   );
 
   const errorMessageSection = fileUploadStepContainer.querySelector(
-    "[data-validation-error-sectio]"
+    "[data-validation-error-section]"
   );
+
+  const assignmentNumberValidationMessage =
+    fileUploadStepContainer.querySelector(
+      "[data-assignment-number-error-message]"
+    );
+
+  const generalValidationMessageContainer =
+    fileUploadStepContainer.querySelector(
+      "[data-general-validation-error-message]"
+    );
 
   let validatedCodeFiles = new Set();
   let validatedVideoFiles = new Set();
@@ -1903,22 +1913,94 @@ const handleFileSelection = (() => {
     }
   }
 
+  // function getOnlyNumberValidationState() {
+  //   const codeValidationErrors = codeFileValidationErrorState.getState();
+  //   const onlyNumberErrorCount = [...codeValidationErrors].filter(
+  //     ([_, errors]) =>
+  //       errors?.length === 1 &&
+  //       errors[0] === "Please select assignment number for file"
+  //   ).length;
+
+  //   if (
+  //     codeValidationErrors.size > 0 &&
+  //     onlyNumberErrorCount === codeValidationErrors.size
+  //   ) {
+  //     return true;
+  //   } else {
+  //     return false;
+  //   }
+  // }
+
+  function getOnlyNumberValidationState() {
+    const uploadChoice = uploadChoiceState.getState();
+
+    if (uploadChoice === "code") {
+      const codeValidationErrors = codeFileValidationErrorState.getState();
+      const onlyNumberErrorCount = [...codeValidationErrors].filter(
+        ([_, errors]) =>
+          errors?.length === 1 &&
+          errors[0] === "Please select assignment number for file"
+      ).length;
+
+      return (
+        codeValidationErrors.size > 0 &&
+        onlyNumberErrorCount === codeValidationErrors.size
+      );
+    }
+
+    if (uploadChoice === "video") {
+      const videoValidationErrors = videoFileValidationErrorState.getState();
+      const onlyNumberErrorCount = [...videoValidationErrors].filter(
+        ([_, errors]) =>
+          errors?.length === 1 &&
+          errors[0] === "Please select assignment number for file"
+      ).length;
+
+      return (
+        videoValidationErrors.size > 0 &&
+        onlyNumberErrorCount === videoValidationErrors.size
+      );
+    }
+
+    return false;
+  }
+
+  function updateNumberValidationErrorUI() {
+    const onlyNumberState = getOnlyNumberValidationState();
+    assignmentNumberValidationMessage.classList.toggle(
+      "active",
+      onlyNumberState
+    );
+  }
+
   function updateCodeValidationErrorUIState() {
-    const codeValidationErrors = codeFileValidationErrorState.getState();
-
-    console.log(codeValidationErrors);
-
-    const onlyNumberErrorCount = [...codeValidationErrors].filter(
-      ([_, errors]) =>
-        errors?.length === 1 &&
-        errors[0] === "Please select assignment number for file"
-    ).length;
-
-    if (
-      codeValidationErrors.size > 0 &&
-      onlyNumberErrorCount === codeValidationErrors.size
-    ) {
+    const onlyNumberState = getOnlyNumberValidationState();
+    if (onlyNumberState) {
+      assignmentNumberValidationMessage.classList.add("active");
       showToast("Please select assignment number for files", "error");
+    } else {
+      assignmentNumberValidationMessage.classList.remove("active");
+    }
+  }
+
+  function updateVideoValidationErrorUIState() {
+    const onlyNumberState = getOnlyNumberValidationState();
+    if (onlyNumberState) {
+      assignmentNumberValidationMessage.classList.add("active");
+      showToast("Please select assignment number for files", "error");
+    } else {
+      assignmentNumberValidationMessage.classList.remove("active");
+    }
+  }
+
+  function updateAllErrorValidationUIStates() {
+    const uploadChoice = uploadChoiceState.getState();
+    updateNumberValidationErrorUI();
+
+    if (uploadChoice === "code") {
+      updateCodeValidationErrorUIState();
+    } else if (uploadChoice === "video") {
+      updateVideoValidationErrorUIState();
     }
   }
 
@@ -2111,12 +2193,26 @@ const handleFileSelection = (() => {
         } else {
           uploadButton.style.display = "none";
         }
+        if (!hasAttemptedCodeValidation && !hasAttemptedVideoValidation) return;
+        const codeFilesErrors = codeFileValidationErrorState.getState();
+        if (codeFilesErrors.size > 0) {
+          errorMessageSection.classList.add("active");
+        } else {
+          errorMessageSection.classList.remove("active");
+        }
       } else if (state == "video") {
         const selectedVideoFiles = selectedVideoFilesState.getState();
         if (selectedVideoFiles.size > 0) {
           uploadButton.style.display = "flex";
         } else {
           uploadButton.style.display = "none";
+        }
+        if (!hasAttemptedVideoValidation && !hasAttemptedCodeValidation) return;
+        const videoFilesErrors = videoFileValidationErrorState.getState();
+        if (videoFilesErrors.size > 0) {
+          errorMessageSection.classList.add("active");
+        } else {
+          errorMessageSection.classList.remove("active");
         }
       }
     });
@@ -2173,7 +2269,6 @@ const handleFileSelection = (() => {
     const fileChoice = uploadChoiceState.getState();
     if (fileChoice === "code") {
       validateSelectedCodeFiles();
-      updateCodeValidationErrorUIState();
       hasAttemptedCodeValidation = true;
     } else if (fileChoice === "video") {
       validateSelectedVideoFiles();
