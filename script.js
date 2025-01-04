@@ -1759,6 +1759,9 @@ const handleFileSelection = (() => {
         videoFileValidationErrorState.setState(videoValidationErrors);
       }
     }
+    if (hasAttemptedCodeValidation || hasAttemptedVideoValidation) {
+      updateErrorValidationUIStates(false);
+    }
   }
 
   function getFileExtension(filename) {
@@ -1913,24 +1916,6 @@ const handleFileSelection = (() => {
     }
   }
 
-  // function getOnlyNumberValidationState() {
-  //   const codeValidationErrors = codeFileValidationErrorState.getState();
-  //   const onlyNumberErrorCount = [...codeValidationErrors].filter(
-  //     ([_, errors]) =>
-  //       errors?.length === 1 &&
-  //       errors[0] === "Please select assignment number for file"
-  //   ).length;
-
-  //   if (
-  //     codeValidationErrors.size > 0 &&
-  //     onlyNumberErrorCount === codeValidationErrors.size
-  //   ) {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // }
-
   function getOnlyNumberValidationState() {
     const uploadChoice = uploadChoiceState.getState();
 
@@ -1973,35 +1958,57 @@ const handleFileSelection = (() => {
     );
   }
 
-  function updateCodeValidationErrorUIState() {
+  function updateCodeValidationErrorUIState(toast) {
     const onlyNumberState = getOnlyNumberValidationState();
+    const codeValidationErrors = codeFileValidationErrorState.getState();
     if (onlyNumberState) {
       assignmentNumberValidationMessage.classList.add("active");
-      showToast("Please select assignment number for files", "error");
+      generalValidationMessageContainer.classList.remove("active");
+      toast
+        ? showToast("please select assignment number for files", "error")
+        : "";
+    } else if (!onlyNumberState && codeValidationErrors.size > 0) {
+      assignmentNumberValidationMessage.classList.remove("active");
+      generalValidationMessageContainer.classList.add("active");
+      toast ? showToast("Some files failed validation", "error") : "";
     } else {
+      generalValidationMessageContainer.classList.remove("active");
       assignmentNumberValidationMessage.classList.remove("active");
     }
   }
 
-  function updateVideoValidationErrorUIState() {
+  function updateVideoValidationErrorUIState(toast) {
     const onlyNumberState = getOnlyNumberValidationState();
+    const videoValidationErrors = videoFileValidationErrorState.getState();
+
     if (onlyNumberState) {
       assignmentNumberValidationMessage.classList.add("active");
-      showToast("Please select assignment number for files", "error");
+      generalValidationMessageContainer.classList.remove("active");
+      toast
+        ? showToast("please select assignment number for files", "error")
+        : "";
+    } else if (!onlyNumberState && videoValidationErrors.size > 0) {
+      assignmentNumberValidationMessage.classList.remove("active");
+      generalValidationMessageContainer.classList.add("active");
+      toast ? showToast("Some files failed validation", "error") : "";
     } else {
+      generalValidationMessageContainer.classList.remove("active");
       assignmentNumberValidationMessage.classList.remove("active");
     }
   }
 
-  function updateAllErrorValidationUIStates() {
+  function updateErrorValidationUIStates(toast) {
     const uploadChoice = uploadChoiceState.getState();
-    updateNumberValidationErrorUI();
-
     if (uploadChoice === "code") {
-      updateCodeValidationErrorUIState();
+      updateCodeValidationErrorUIState(toast);
     } else if (uploadChoice === "video") {
-      updateVideoValidationErrorUIState();
+      updateVideoValidationErrorUIState(toast);
     }
+  }
+
+  function resetValidationUIStates() {
+    generalValidationMessageContainer.classList.remove("active");
+    assignmentNumberValidationMessage.classList.remove("active");
   }
 
   function resetAttemptedValidationStates() {
@@ -2036,6 +2043,7 @@ const handleFileSelection = (() => {
     }
 
     errorState.setState(errors);
+    updateNumberValidationErrorUI();
   }
 
   function clearNumberValidationError(fileName, fileType) {
@@ -2062,37 +2070,8 @@ const handleFileSelection = (() => {
     }
 
     errorState.setState(errors);
+    updateNumberValidationErrorUI();
   }
-
-  // function clearValidationError(fileName, fileType) {
-  //   // if (!hasAttemptedSubmission) {
-  //   //   return;
-  //   // }
-  //   const errorState =
-  //     fileType === "code"
-  //       ? codeFileValidationErrorState
-  //       : videoFileValidationErrorState;
-
-  //   const errors = errorState.getState();
-
-  //   if (!errors.has(fileName)) {
-  //     return;
-  //   }
-
-  //   const updatedErrors = errors
-  //     .get(fileName)
-  //     .filter(
-  //       (error) => !error.includes("Please select assignment number for file")
-  //     );
-
-  //   if (updatedErrors.length === 0) {
-  //     errors.delete(fileName);
-  //   } else {
-  //     errors.set(fileName, updatedErrors);
-  //   }
-
-  //   errorState.setState(errors);
-  // }
 
   function clearCodeValidationErrors() {
     const errorMap = codeFileValidationErrorState.getState();
@@ -2274,6 +2253,7 @@ const handleFileSelection = (() => {
       validateSelectedVideoFiles();
       hasAttemptedVideoValidation = true;
     }
+    updateErrorValidationUIStates(true);
   }
 
   function initializeDefaults() {
@@ -2337,6 +2317,7 @@ const handleFileSelection = (() => {
   function handleSelectionInternalReset() {
     resetAttemptedValidationStates();
     resetValidatedFilesSets();
+    resetValidationUIStates();
   }
 
   return {
