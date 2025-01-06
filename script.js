@@ -2399,4 +2399,6 @@ const handleFileSelection = (() => {
   };
 })();
 
+function uploadHandling() {}
+
 handleFileSelection.init();
