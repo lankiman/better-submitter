@@ -2402,5 +2402,5 @@ const handleFileSelection = (() => {
 handleFileSelection.init();
 
 function handleFileUpload() {
-  let upload = 0;
+  let upload = jkkjkljklj;
 }
