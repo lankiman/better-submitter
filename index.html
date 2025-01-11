@@ -408,84 +408,85 @@
                   </svg>
                 </button>
               </div>
-              <!-- <div
-              data-codefile-dropzone-container
-              class="drag-drop-container active codefile-dropzone"
-            >
-              <div class="dropzone-svg">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="size-6"
+              <div
+                hidden
+                data-codefile-dropzone-container
+                class="drag-drop-container active codefile-dropzone"
+              >
+                <div class="dropzone-svg">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="size-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M14.25 9.75 16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="dropzone-file-picker-container"
+                  data-dropzone-code-file-picker-container
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M14.25 9.75 16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z"
-                  />
-                </svg>
+                  Drag & Drop or
+                  <button
+                    data-dropzone-code-file-picker
+                    class="dropzone-file-picker dropzone-code-file-picker"
+                  >
+                    Choose code
+                  </button>
+                  file to upload
+                </div>
+                <section class="code-file-info file-info-dropzone">
+                  <p data-file-info-dropzone data-codefile-info-dropzone>
+                    file must be a .py file, max size of 1mb
+                  </p>
+                </section>
               </div>
               <div
-                class="dropzone-file-picker-container"
-                data-dropzone-code-file-picker-container
+                data-videofile-dropzone-container
+                class="drag-drop-container videofile-dropzone"
               >
-                Drag & Drop or
-                <button
-                  data-dropzone-code-file-picker
-                  class="dropzone-file-picker dropzone-code-file-picker"
+                <div class="dropzone-svg">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="size-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="dropzone-file-picker-container"
+                  data-dropzone-code-file-picker-container
                 >
-                  Choose code
-                </button>
-                file to upload
+                  Drag & Drop or
+                  <button
+                    data-dropzone-video-file-picker
+                    class="dropzone-file-picker dropzone-video-file-picker"
+                  >
+                    Choose video
+                  </button>
+                  file to upload
+                </div>
+                <section class="video-file-info file-info-dropzone">
+                  <p data-file-info-dropzone data-videofile-info-dropzone>
+                    file must be a .mp4 file, max size of 100mb
+                  </p>
+                </section>
               </div>
-              <section class="code-file-info file-info-dropzone">
-                <p data-file-info-dropzone data-codefile-info-dropzone>
-                  file must be a .py file, max size of 1mb
-                </p>
-              </section>
-            </div>
-            <div
-              data-videofile-dropzone-container
-              class="drag-drop-container videofile-dropzone"
-            >
-              <div class="dropzone-svg">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="size-6"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
-                  />
-                </svg>
-              </div>
-              <div
-                class="dropzone-file-picker-container"
-                data-dropzone-code-file-picker-container
-              >
-                Drag & Drop or
-                <button
-                  data-dropzone-video-file-picker
-                  class="dropzone-file-picker dropzone-video-file-picker"
-                >
-                  Choose video
-                </button>
-                file to upload
-              </div>
-              <section class="video-file-info file-info-dropzone">
-                <p data-file-info-dropzone data-videofile-info-dropzone>
-                  file must be a .mp4 file, max size of 100mb
-                </p>
-              </section>
-            </div> -->
             </div>
           </div>
           <div
@@ -499,7 +500,7 @@
             >
               <ul
                 data-selected-code-files-list
-                class="selected-files-list file-list selected-code-files-list"
+                class="selected-files-list active file-list selected-code-files-list"
               ></ul>
             </div>
             <div
@@ -674,5 +675,12 @@
         </button>
       </section>
     </dialog>
+
+    <ul
+      data-uploading-code-files-list
+      class="uploading-files-list file-list uploading-code-files-list"
+    >
+      <li><div></div></li>
+    </ul>
   </body>
 </html>
