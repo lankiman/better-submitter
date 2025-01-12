@@ -637,10 +637,11 @@ body {
 .assignment-error-modal::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+.uploading-file-list-item,
 .selected-file-list-item {
   display: flex;
   align-items: center;
-  padding: 0.2rem;
+  padding: 0.3rem;
   margin-top: 0.4rem;
   background-color: rgb(223, 221, 221);
   /* width: 100%; */
@@ -659,6 +660,7 @@ body {
   transform: translateY(-1px);
 }
 
+.uploading-file-list-item-svg,
 .selected-file-list-item-svg {
   width: 1.5rem;
   height: 1.5rem;
@@ -671,19 +673,22 @@ body {
   justify-content: center;
   flex-shrink: 0;
 }
+.uploading-file-list-item-details,
 .selected-file-list-item-details {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding-left: 0.5rem;
   flex-grow: 1;
   width: 80%;
   gap: 0.1rem;
 }
+
 .selected-file-list-name-section {
   width: 80%;
   overflow: hidden;
 }
+.uploading-file-list-item-name,
 .selected-file-list-item-name {
   padding: 0;
   margin: 0;
@@ -693,12 +698,15 @@ body {
   text-overflow: ellipsis;
   max-width: 95%;
 }
+.uploading-file-list-buttons-section,
 .selected-file-list-buttons-section {
   display: flex;
   gap: 0.3rem;
   flex-shrink: 0;
   flex-grow: 1;
 }
+
+.uploading-file-list-button,
 .selected-file-list-button {
   background: none;
   cursor: pointer;
@@ -711,9 +719,6 @@ body {
   color: gray;
   border-radius: 0.375rem;
   transition: all 0.2s ease;
-}
-
-.uploading-file-list-item {
 }
 
 .select-assignment-number-button {
@@ -832,9 +837,9 @@ body {
   gap: 0.5rem;
   padding: auto;
 }
-.assigment-dialog-close-button {
-  /* background-color: green; */
-}
+/* .assigment-dialog-close-button {
+  background-color: green;
+} */
 .assigment-dialog-close-button svg {
   width: 1.5rem;
   height: 1.5rem;
@@ -858,6 +863,52 @@ body {
 }
 .assignment-error-list p {
   margin: 0.2rem;
+}
+
+/* Uploading file styles */
+
+.uploading-file-list-item {
+  font-size: small;
+}
+
+.uploading-file-list-item-details {
+}
+.uploading-file-progress-container {
+}
+
+.uploading-file-list-item-name {
+}
+
+.uploading-file-progress-bar {
+  display: none;
+}
+
+.uploading-file-progress-bar.active {
+  display: block;
+}
+
+.uploading-file-waiting-text {
+  display: none;
+}
+
+.uploading-file-waiting-text.active {
+  display: block;
+}
+
+.uploading-file-list-buttons-section {
+}
+
+.uploading-file-list-status-section {
+  width: 90%;
+  overflow: hidden;
+}
+
+/* .cancel-uploading-file-button {
+} */
+
+.uploading-file-list-button:hover {
+  border-color: red;
+  color: red;
 }
 
 /*Animation Keyframes*/
