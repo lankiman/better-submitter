@@ -2434,7 +2434,6 @@ const handleFileSelectionAndUpload = (() => {
     li.classList.add("selected-file-list-item");
     li.setAttribute("data-selected-files-list-item", true);
     li.dataset.fileName = file.name;
-    li.accessKey = "string";
   }
 
   return {
