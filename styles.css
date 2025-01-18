@@ -899,7 +899,8 @@ body {
 }
 
 .uploading-file-list-status-section {
-  width: 90%;
+  width: 98%;
+
   overflow: hidden;
 }
 
