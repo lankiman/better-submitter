@@ -1389,6 +1389,10 @@ const handleFileSelectionAndUpload = (() => {
   const uploadButton =
     fileUploadStepContainer.querySelector("[data-proceed-btn]");
 
+  const resetButton = fileUploadStepContainer.querySelector(
+    "[data-reset-button]"
+  );
+
   const spinnerSection = fileUploadStepContainer.querySelector(
     "[data-spinner-section]"
   );
@@ -2389,6 +2393,12 @@ const handleFileSelectionAndUpload = (() => {
     resetValidationUIStates();
   }
 
+  function disableFileUploadStepButtons() {
+    backButton.setAttribute("disabled", "true");
+    resetButton.setAttribute("disabled", "true");
+    uploadButton.setAttribute("disabled", "true");
+  }
+
   function updateUIonUPloadStart() {
     const choice = uploadChoiceState.getState();
     if (choice === "code") {
@@ -2398,6 +2408,7 @@ const handleFileSelectionAndUpload = (() => {
       uploadingCodeFilesList.classList.remove("active");
       selectedCodeFilesList.classList.add("active");
     }
+    disableFileUploadStepButtons();
   }
 
   function createUploadListItem(file) {
@@ -2431,9 +2442,78 @@ const handleFileSelectionAndUpload = (() => {
       />
     </svg>`;
     const li = document.createElement("li");
-    li.classList.add("selected-file-list-item");
-    li.setAttribute("data-selected-files-list-item", true);
+    li.classList.add("uploading-file-list-item");
+    li.setAttribute("data-uploading-file-list-item", true);
     li.dataset.fileName = file.name;
+    li.innerHTML = `
+        <div class="uploading-file-list-item-svg">
+          ${fileChoice === "code" ? codeFileSvg : videoFileSvg}
+        </div>
+        <div class="uploading-file-list-item-details">
+          <div class="uploading-file-list-status-section">
+            <p
+              data-uploading-file-list-item-name
+              class="uploading-file-list-item-name"
+            >
+              ${file.name}
+            </p>
+            <div
+              data-uploading-file-progress-container
+              class="uploading-file-progress-container"
+            >
+              <progress
+                data-file-uploading-progress
+                class="uploading-file-progress-bar"
+                low="10"
+                high="90"
+                max="100"
+                value="0"
+              ></progress>
+              <span
+                class="uploading-file-progress-text"
+                data-uploading-file-progress-text
+                >0% of 20mb</span
+              >
+              <span
+                data-uploading-file-wating-text
+                class="uploading-file-wating-text active"
+              >
+                wating to upload
+              </span>
+            </div>
+          </div>
+          <div class="uploading-file-list-buttons-section">
+            <button
+              type="button"
+              class="cancel-uploading-file-button uploading-file-list-button"
+              data-cancel-uploading-file-button
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+`;
+  }
+
+  function addUploadFileToList(file) {
+    const fileChoice = uploadChoiceState.getState();
+    const li = createFilelistItem(file);
+    fileChoice === "code"
+      ? uploadingCodeFilesList.appendChild(li)
+      : uploadingVideoFilesList.appendChild(li);
   }
 
   return {
