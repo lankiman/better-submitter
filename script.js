@@ -1543,7 +1543,7 @@ const handleFileSelectionAndUpload = (() => {
       const selectedCodeFiles = selectedCodeFilesState.getState();
       const maxAssignmentNumber =
         assignmentMetaDataState.getState().maxAssignmentNumber;
-      if (selectedCodeFiles.size == maxAssignmentNumber) {
+      if (selectedCodeFiles.size >= maxAssignmentNumber) {
         showToast("Cannot Select more than max assignment number", "info");
         return;
       }
@@ -2395,7 +2395,40 @@ const handleFileSelectionAndUpload = (() => {
       : uploadingVideoFilesList.appendChild(li);
   }
 
-  function uploadFile(file, choice) {
+  function computeSubmssionFileType(course, choice) {
+    if (choice === "video") {
+      return "mp4";
+    } else if (choice === "code") {
+      switch (course) {
+        case "C":
+          return "c";
+        case "Java":
+          return "java";
+        case "Python":
+          return "py";
+      }
+    }
+  }
+
+  function computeFileSumbmissionRequestData(fileMap) {
+    const student = userState.getState();
+    const assigmentType = selectedCourseState.getState();
+    let uploadChoice = uploadChoiceState.getState();
+    let requestData = {};
+    requestData["StudentData"] = student;
+    requestData["AssignmentNumber"] = fileMap.assignmentNumber;
+    requestData["SubmissionFileType"] = uploadChoice;
+    requestData["AssignmentType"] = assigmentType;
+    requestData["FileType"] = computeSubmssionFileType(
+      assigmentType,
+      uploadChoice
+    );
+    requestData["File"] = fileMap.assignmentFile;
+
+    return requestData;
+  }
+
+  function uploadFile(fileMap, choice) {
     const currentReqState =
       choice === "code"
         ? currentCodeFileUploadReqState
@@ -2403,8 +2436,74 @@ const handleFileSelectionAndUpload = (() => {
     return new Promise((resolve, reject) => {
       const req = new XMLHttpRequest();
       currentReqState.setState(req);
+      const requestData = computeFileSumbmissionRequestData(fileMap);
       req.open("POST", `${API_BASE_URL}/student/upload`, true);
+      const formData = new FormData();
+      for (const key in requestData) {
+        formData.append(key, requestData[key]);
+      }
+
+      req.onload = function () {
+        console.log(this.responseText);
+        resolve();
+      };
+
+      req.onerror = function () {
+        console.log(this.responseText);
+        reject(new Error("Upload failed"));
+      };
+
+      req.send(formData);
     });
+  }
+
+  function computeUploadQueueBaseCase() {
+    const choice = uploadChoiceState.getState();
+    if (choice === "code") {
+      return (
+        isCodeFileUploadingState.getState() ||
+        !codeFilesUploadQueueState.getState().length
+      );
+    } else if (choice === "video") {
+      return (
+        isVideoFileUploadingState.getState() ||
+        !videoFilesUploadQueueState.getState().length
+      );
+    }
+  }
+
+  function setIsUploadingState(state) {
+    uploadChoiceState.getState() === "code"
+      ? isCodeFileUploadingState.setState(state)
+      : isVideoFileUploadingState.setState(state);
+  }
+
+  function getFileMapToUpload(index) {
+    uploadChoiceState.getState() === "code"
+      ? codeFilesUploadQueueState.getState()[index]
+      : videoFilesUploadQueueState.getState()[index];
+  }
+
+  function removedProccesedQueueFile() {
+    uploadChoiceState.getState() === "code"
+      ? codeFilesUploadQueueState.getState().shift()
+      : videoFilesUploadQueueState.getState().shift();
+  }
+
+  async function processUploadQueue(queue) {
+    const baseCase = computeUploadQueueBaseCase();
+    if (baseCase) return;
+    const fileMap = queue[0];
+    setIsUploadingState(true);
+    try {
+      await uploadFile(fileMap);
+      queue.shift();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsUploadingState(false);
+      processUploadQueue(queue);
+    }
   }
 
   function handleFileUploadProceed() {
