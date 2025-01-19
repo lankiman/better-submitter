@@ -2132,6 +2132,302 @@ const handleFileSelectionAndUpload = (() => {
     });
   }
 
+  function createErrorListItem() {
+    const li = document.createElement("li");
+    li.classList.add("error-message-list-item");
+    return li;
+  }
+
+  function createErrorFilenameHeader() {
+    const h4 = document.createElement("h4");
+    h4.classList.add("error-message-filename");
+    return h4;
+  }
+  function createErrorParagraphElement() {
+    const p = document.createElement("p");
+    p.classList.add("error-message-paragraph");
+    return p;
+  }
+
+  function generateValidationErrorMessageList() {
+    const fileChoice = uploadChoiceState.getState();
+
+    const errors =
+      fileChoice === "code"
+        ? codeFileValidationErrorState.getState()
+        : videoFileValidationErrorState.getState();
+
+    for (const [filename, errorList] of errors) {
+      const listItem = createErrorListItem();
+      const filenameHeader = createErrorFilenameHeader();
+      filenameHeader.textContent = filename;
+      listItem.appendChild(filenameHeader);
+      errorList.forEach((error) => {
+        const errorMessageParagraph = createErrorParagraphElement();
+        errorMessageParagraph.textContent = error;
+        listItem.appendChild(errorMessageParagraph);
+      });
+      assigmentErrorList.appendChild(listItem);
+    }
+  }
+
+  //actual upload logic
+
+  const codeFilesUploadQueueState = createStateManager([]);
+  const videoFilesUploadQueueState = createStateManager([]);
+
+  const currentCodeFileUploadReqState = createStateManager(null);
+  const currentVideoFileUploadReqState = createStateManager(null);
+
+  const isCodeFileUploadingState = createStateManager(false);
+  const isVideoFileUploadingState = createStateManager(false);
+
+  const currentUploadedCodeFilesState = createStateManager([]);
+  const currentUploadedVideoFilesState = createStateManager([]);
+
+  const currentUploadingCodeFileState = createStateManager({});
+  const currentUploadingVideoFileState = createStateManager({});
+
+  const isFileUploadingState = createStateManager(
+    isCodeFileUploadingState.getState() || isVideoFileUploadingState.getState()
+  );
+
+  function disableFileUploadStepButtons() {
+    backButton.setAttribute("disabled", "true");
+    resetButton.setAttribute("disabled", "true");
+    uploadButton.setAttribute("disabled", "true");
+  }
+
+  function replaceUploadCancelButtonWithCheckmark(fileName) {
+    const cancelBtn = fileUploadStepContainer
+      .querySelector(`[data-uploading-filename=${fileName}]`)
+      ?.querySelector("[data-cancel-uploading-file-button]");
+
+    const checkmark = fileUploadStepContainer
+      .querySelector(`[data-uploading-filename=${fileName}]`)
+      ?.querySelector("[data-file-uploaded-checkmark]");
+
+    if (checkmark && cancelBtn) {
+      checkmark.classList.add("uploaded");
+      cancelBtn.classList.add("uploaded");
+      cancelBtn.setAttribute("disabled", true);
+    }
+  }
+
+  function populateFloatingUpload(progress) {
+    const fileChoice = uploadChoiceState.getState();
+    if (fileChoice === "code") {
+    }
+  }
+
+  function updateUIonUPloadStart() {
+    const choice = uploadChoiceState.getState();
+    if (choice === "code") {
+      selectedCodeFilesList.classList.remove("active");
+      uploadingCodeFilesList.classList.add("active");
+    } else if (choice === "video") {
+      uploadingCodeFilesList.classList.remove("active");
+      selectedCodeFilesList.classList.add("active");
+    }
+    disableFileUploadStepButtons();
+  }
+
+  function abortUploadReq(fileName) {
+    const choice = uploadChoiceState.getState();
+    if (choice === "code") {
+      const currentUploadingFile = currentUploadingCodeFileState.getState();
+      const currentReq = currentCodeFileUploadReqState.getState();
+      if (currentUploadingFile.name === fileName && currentReq) {
+        currentReq.abort();
+      }
+    } else if (choice === "video") {
+      const currentUploadingFile = currentUploadingVideoFileState.getState();
+      const currentReq = currentVideoFileUploadReqState.getState();
+      if (currentUploadingFile.name === fileName && currentReq) {
+        currentReq.abort();
+      }
+    }
+  }
+
+  function cancelUpload(fileName, li) {
+    const choice = uploadChoiceState.getState();
+    const fileUploadQueueState =
+      choice === "code"
+        ? codeFilesUploadQueueState
+        : videoFilesUploadQueueState;
+    const fileUploadQueue =
+      choice === "code"
+        ? codeFilesUploadQueueState.getState()
+        : videoFilesUploadQueueState.getState();
+
+    const index = fileUploadQueue.findIndex((file) => file.name === fileName);
+    if (index != -1) {
+      fileUploadQueue.splice(index, 1);
+      li.remove();
+      fileUploadQueueState.setState(fileUploadQueue);
+      abortUploadReq(fileName);
+    }
+  }
+
+  function createUploadListItem(file) {
+    const fileChoice = uploadChoiceState.getState();
+    const codeFileSvg = `<svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1"
+            stroke="currentColor"
+            class="size-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M14.25 9.75 16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z"
+            />
+          </svg>`;
+    const videoFileSvg = `<svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      class="size-6"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-1.5A1.125 1.125 0 0 1 18 18.375M20.625 4.5H3.375m17.25 0c.621 0 1.125.504 1.125 1.125M20.625 4.5h-1.5C18.504 4.5 18 5.004 18 5.625m3.75 0v1.5c0 .621-.504 1.125-1.125 1.125M3.375 4.5c-.621 0-1.125.504-1.125 1.125M3.375 4.5h1.5C5.496 4.5 6 5.004 6 5.625m-3.75 0v1.5c0 .621.504 1.125 1.125 1.125m0 0h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m1.5-3.75C5.496 8.25 6 7.746 6 7.125v-1.5M4.875 8.25C5.496 8.25 6 8.754 6 9.375v1.5m0-5.25v5.25m0-5.25C6 5.004 6.504 4.5 7.125 4.5h9.75c.621 0 1.125.504 1.125 1.125m1.125 2.625h1.5m-1.5 0A1.125 1.125 0 0 1 18 7.125v-1.5m1.125 2.625c-.621 0-1.125.504-1.125 1.125v1.5m2.625-2.625c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125M18 5.625v5.25M7.125 12h9.75m-9.75 0A1.125 1.125 0 0 1 6 10.875M7.125 12C6.504 12 6 12.504 6 13.125m0-2.25C6 11.496 5.496 12 4.875 12M18 10.875c0 .621-.504 1.125-1.125 1.125M18 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m-12 5.25v-5.25m0 5.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125m-12 0v-1.5c0-.621-.504-1.125-1.125-1.125M18 18.375v-5.25m0 5.25v-1.5c0-.621.504-1.125 1.125-1.125M18 13.125v1.5c0 .621.504 1.125 1.125 1.125M18 13.125c0-.621.504-1.125 1.125-1.125M6 13.125v1.5c0 .621-.504 1.125-1.125 1.125M6 13.125C6 12.504 5.496 12 4.875 12m-1.5 0h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M19.125 12h1.5m0 0c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h1.5m14.25 0h1.5"
+      />
+    </svg>`;
+    const li = document.createElement("li");
+    li.classList.add("uploading-file-list-item");
+    li.setAttribute("data-uploading-file-list-item", true);
+    li.dataset.uploadingFilename = file.name;
+    li.innerHTML = `
+        <div class="uploading-file-list-item-svg">
+          ${fileChoice === "code" ? codeFileSvg : videoFileSvg}
+        </div>
+       <div class="uploading-file-list-item-details">
+        <div class="uploading-file-list-status-section">
+          <p
+            data-uploading-file-list-item-name
+            class="uploading-file-list-item-name"
+          >
+            ${file.name}
+          </p>
+          <div
+            data-uploading-file-progress-container
+            class="uploading-file-progress-container"
+          >
+            <progress
+              data-file-uploading-progress
+              class="uploading-file-progress-bar"
+              low="10"
+              high="90"
+              max="100"
+              value="0"
+            ></progress>
+            <span
+              class="uploading-file-progress-text"
+              data-uploading-file-progress-text
+              >0% of 20mb</span
+            >
+            <span
+              data-uploading-file-wating-text
+              class="uploading-file-wating-text active"
+            >
+              wating to upload
+            </span>
+          </div>
+        </div>
+        <div class="uploading-file-list-buttons-section">
+          <button
+            type="button"
+            class="cancel-uploading-file-button uploading-file-list-button"
+            data-cancel-uploading-file-button
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+            </svg>
+          </button>
+          <span data-file-uploaded-checkmark class="file-uploaded-checkmark">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="green"
+              class="size-2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+            </svg>
+          </span>
+        </div>
+      </div>
+`;
+
+    const cancelBtn = li.querySelector("[data-cancel-uploading-file-button]");
+    cancelBtn.addEventListener("click", () => {
+      cancelUpload(file.name, li);
+    });
+  }
+
+  function addUploadFileToList(file) {
+    const fileChoice = uploadChoiceState.getState();
+    const li = createFilelistItem(file);
+    fileChoice === "code"
+      ? uploadingCodeFilesList.appendChild(li)
+      : uploadingVideoFilesList.appendChild(li);
+  }
+
+  function uploadFile(file, choice) {
+    const currentReqState =
+      choice === "code"
+        ? currentCodeFileUploadReqState
+        : currentVideoFileUploadReqState;
+    return new Promise((resolve, reject) => {
+      const req = new XMLHttpRequest();
+      currentReqState.setState(req);
+      req.open("POST", `${API_BASE_URL}/student/upload`, true);
+    });
+  }
+
+  function handleFileUploadProceed() {
+    const fileChoice = uploadChoiceState.getState();
+    if (fileChoice === "code") {
+      validateSelectedCodeFiles();
+      hasAttemptedCodeValidation = true;
+    } else if (fileChoice === "video") {
+      validateSelectedVideoFiles();
+      hasAttemptedVideoValidation = true;
+    }
+    updateErrorValidationUIStates(true);
+  }
+
+  // initializier and  and subscribers
+
+  function initializeDefaults() {
+    const selectedCourse = selectedCourseState.getState();
+    const uploadChoice = uploadChoiceState.getState();
+    computeCodefilesInputState(selectedCourse);
+    computeRequiredFileInfoState(uploadChoice);
+  }
+
   function initializeSubscribers() {
     const requiredFileInfoUnsubscribe = uploadChoiceState.subscribe(
       computeRequiredFileInfoState
@@ -2263,64 +2559,6 @@ const handleFileSelectionAndUpload = (() => {
     });
   }
 
-  function createErrorListItem() {
-    const li = document.createElement("li");
-    li.classList.add("error-message-list-item");
-    return li;
-  }
-
-  function createErrorFilenameHeader() {
-    const h4 = document.createElement("h4");
-    h4.classList.add("error-message-filename");
-    return h4;
-  }
-  function createErrorParagraphElement() {
-    const p = document.createElement("p");
-    p.classList.add("error-message-paragraph");
-    return p;
-  }
-
-  function generateValidationErrorMessageList() {
-    const fileChoice = uploadChoiceState.getState();
-
-    const errors =
-      fileChoice === "code"
-        ? codeFileValidationErrorState.getState()
-        : videoFileValidationErrorState.getState();
-
-    for (const [filename, errorList] of errors) {
-      const listItem = createErrorListItem();
-      const filenameHeader = createErrorFilenameHeader();
-      filenameHeader.textContent = filename;
-      listItem.appendChild(filenameHeader);
-      errorList.forEach((error) => {
-        const errorMessageParagraph = createErrorParagraphElement();
-        errorMessageParagraph.textContent = error;
-        listItem.appendChild(errorMessageParagraph);
-      });
-      assigmentErrorList.appendChild(listItem);
-    }
-  }
-
-  function handleFileUploadProceed() {
-    const fileChoice = uploadChoiceState.getState();
-    if (fileChoice === "code") {
-      validateSelectedCodeFiles();
-      hasAttemptedCodeValidation = true;
-    } else if (fileChoice === "video") {
-      validateSelectedVideoFiles();
-      hasAttemptedVideoValidation = true;
-    }
-    updateErrorValidationUIStates(true);
-  }
-
-  function initializeDefaults() {
-    const selectedCourse = selectedCourseState.getState();
-    const uploadChoice = uploadChoiceState.getState();
-    computeCodefilesInputState(selectedCourse);
-    computeRequiredFileInfoState(uploadChoice);
-  }
-
   function initializeEventListiners() {
     backButton.addEventListener("click", () => {
       const currentStudentDepartment = getCurrentUserDepartment();
@@ -2391,129 +2629,6 @@ const handleFileSelectionAndUpload = (() => {
     resetAttemptedValidationStates();
     resetValidatedFilesSets();
     resetValidationUIStates();
-  }
-
-  function disableFileUploadStepButtons() {
-    backButton.setAttribute("disabled", "true");
-    resetButton.setAttribute("disabled", "true");
-    uploadButton.setAttribute("disabled", "true");
-  }
-
-  function updateUIonUPloadStart() {
-    const choice = uploadChoiceState.getState();
-    if (choice === "code") {
-      selectedCodeFilesList.classList.remove("active");
-      uploadingCodeFilesList.classList.add("active");
-    } else if (choice === "video") {
-      uploadingCodeFilesList.classList.remove("active");
-      selectedCodeFilesList.classList.add("active");
-    }
-    disableFileUploadStepButtons();
-  }
-
-  function createUploadListItem(file) {
-    const fileChoice = uploadChoiceState.getState();
-    const codeFileSvg = `<svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1"
-            stroke="currentColor"
-            class="size-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M14.25 9.75 16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z"
-            />
-          </svg>`;
-    const videoFileSvg = `<svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor"
-      class="size-6"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-1.5A1.125 1.125 0 0 1 18 18.375M20.625 4.5H3.375m17.25 0c.621 0 1.125.504 1.125 1.125M20.625 4.5h-1.5C18.504 4.5 18 5.004 18 5.625m3.75 0v1.5c0 .621-.504 1.125-1.125 1.125M3.375 4.5c-.621 0-1.125.504-1.125 1.125M3.375 4.5h1.5C5.496 4.5 6 5.004 6 5.625m-3.75 0v1.5c0 .621.504 1.125 1.125 1.125m0 0h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m1.5-3.75C5.496 8.25 6 7.746 6 7.125v-1.5M4.875 8.25C5.496 8.25 6 8.754 6 9.375v1.5m0-5.25v5.25m0-5.25C6 5.004 6.504 4.5 7.125 4.5h9.75c.621 0 1.125.504 1.125 1.125m1.125 2.625h1.5m-1.5 0A1.125 1.125 0 0 1 18 7.125v-1.5m1.125 2.625c-.621 0-1.125.504-1.125 1.125v1.5m2.625-2.625c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125M18 5.625v5.25M7.125 12h9.75m-9.75 0A1.125 1.125 0 0 1 6 10.875M7.125 12C6.504 12 6 12.504 6 13.125m0-2.25C6 11.496 5.496 12 4.875 12M18 10.875c0 .621-.504 1.125-1.125 1.125M18 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m-12 5.25v-5.25m0 5.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125m-12 0v-1.5c0-.621-.504-1.125-1.125-1.125M18 18.375v-5.25m0 5.25v-1.5c0-.621.504-1.125 1.125-1.125M18 13.125v1.5c0 .621.504 1.125 1.125 1.125M18 13.125c0-.621.504-1.125 1.125-1.125M6 13.125v1.5c0 .621-.504 1.125-1.125 1.125M6 13.125C6 12.504 5.496 12 4.875 12m-1.5 0h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M19.125 12h1.5m0 0c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h1.5m14.25 0h1.5"
-      />
-    </svg>`;
-    const li = document.createElement("li");
-    li.classList.add("uploading-file-list-item");
-    li.setAttribute("data-uploading-file-list-item", true);
-    li.dataset.fileName = file.name;
-    li.innerHTML = `
-        <div class="uploading-file-list-item-svg">
-          ${fileChoice === "code" ? codeFileSvg : videoFileSvg}
-        </div>
-        <div class="uploading-file-list-item-details">
-          <div class="uploading-file-list-status-section">
-            <p
-              data-uploading-file-list-item-name
-              class="uploading-file-list-item-name"
-            >
-              ${file.name}
-            </p>
-            <div
-              data-uploading-file-progress-container
-              class="uploading-file-progress-container"
-            >
-              <progress
-                data-file-uploading-progress
-                class="uploading-file-progress-bar"
-                low="10"
-                high="90"
-                max="100"
-                value="0"
-              ></progress>
-              <span
-                class="uploading-file-progress-text"
-                data-uploading-file-progress-text
-                >0% of 20mb</span
-              >
-              <span
-                data-uploading-file-wating-text
-                class="uploading-file-wating-text active"
-              >
-                wating to upload
-              </span>
-            </div>
-          </div>
-          <div class="uploading-file-list-buttons-section">
-            <button
-              type="button"
-              class="cancel-uploading-file-button uploading-file-list-button"
-              data-cancel-uploading-file-button
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-6"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-`;
-  }
-
-  function addUploadFileToList(file) {
-    const fileChoice = uploadChoiceState.getState();
-    const li = createFilelistItem(file);
-    fileChoice === "code"
-      ? uploadingCodeFilesList.appendChild(li)
-      : uploadingVideoFilesList.appendChild(li);
   }
 
   return {

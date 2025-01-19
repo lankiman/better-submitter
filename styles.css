@@ -908,16 +908,23 @@ body {
 
 .uploading-file-list-status-section {
   width: 98%;
-
   overflow: hidden;
 }
-
-/* .cancel-uploading-file-button {
-} */
 
 .uploading-file-list-button:hover {
   border-color: red;
   color: red;
+}
+
+.uploading-file-list-button.uploaded {
+  display: none;
+}
+.file-uploaded-checkmark {
+  display: none;
+  width: 2rem;
+}
+.file-uploaded-checkmark.uploaded {
+  display: flex;
 }
 
 /*Animation Keyframes*/
