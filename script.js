@@ -3,43 +3,7 @@ const API_BASE_URL =
     ? "http://localhost:5239"
     : `http://${window.location.hostname}:5239`;
 
-//global state variables and function
-
-// const createStateManager = (initialState = null, isDynamic = false) => {
-//   let state = initialState;
-//   const resetValue = initialState;
-//   const subscribers = [];
-
-//   return {
-//     getState() {
-//       return state;
-//     },
-//     setState(newState) {
-//       if (
-//         isDynamic &&
-//         typeof state === "object" &&
-//         typeof newState === "object"
-//       ) {
-//         state = { ...state, ...newState };
-//       } else {
-//         state = newState;
-//       }
-//       subscribers.forEach((fn) => fn(state));
-//     },
-
-//     subscribe(fn) {
-//       subscribers.push(fn);
-//       return () => {
-//         const index = subscribers.indexOf(fn);
-//         subscribers.splice(index, 1);
-//       };
-//     },
-
-//     resetState() {
-//       this.setState(resetValue);
-//     }
-//   };
-// };
+//global state variables and functions
 
 const createStateManager = (initialState = null, isDynamic = false) => {
   let state = initialState;
