@@ -2233,8 +2233,10 @@ const handleFileSelectionAndUpload = (() => {
     }
   }
 
-  function createUploadListItem(file) {
+  function createUploadListItem(fileMap) {
     const fileChoice = uploadChoiceState.getState();
+    const file = fileMap.assignmentFile.name;
+    const number = file.assignmentNumber;
     const codeFileSvg = `<svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -2351,9 +2353,9 @@ const handleFileSelectionAndUpload = (() => {
     });
   }
 
-  function addUploadFileToList(file) {
+  function addUploadFileToList(fileMap) {
     const fileChoice = uploadChoiceState.getState();
-    const li = createFilelistItem(file);
+    const li = createFilelistItem(fileMap);
     fileChoice === "code"
       ? uploadingCodeFilesList.appendChild(li)
       : uploadingVideoFilesList.appendChild(li);
@@ -2455,8 +2457,7 @@ const handleFileSelectionAndUpload = (() => {
   }
 
   async function processUploadQueue(queue) {
-    const baseCase = computeUploadQueueBaseCase();
-    if (baseCase) return;
+    if (!queue.length) return;
     const fileMap = queue[0];
     setIsUploadingState(true);
     try {
@@ -2466,8 +2467,20 @@ const handleFileSelectionAndUpload = (() => {
       console.log(error);
     } finally {
       setIsUploadingState(false);
-      processUploadQueue(queue);
     }
+    processUploadQueue(queue);
+  }
+
+  function computeAndUploadFiles(filesMap, choice) {
+    for (let fileMap of filesMap) {
+      addUploadFileToList(fileMap);
+    }
+    const uploadQueue =
+      choice === "code"
+        ? codeFilesUploadQueueState.getState()
+        : videoFilesUploadQueueState.getState();
+    uploadQueue.push(...filesMap);
+    processUploadQueue(uploadQueue);
   }
 
   function handleFileUploadProceed() {
@@ -2475,9 +2488,21 @@ const handleFileSelectionAndUpload = (() => {
     if (fileChoice === "code") {
       validateSelectedCodeFiles();
       hasAttemptedCodeValidation = true;
+      const state = codeFileValidationErrorState.getState().size === 0;
+      console.log(state);
+      if (state) {
+        const fileMaps = selectedCodeFilesState.getState();
+        computeAndUploadFiles(fileMaps, fileChoice);
+      }
     } else if (fileChoice === "video") {
       validateSelectedVideoFiles();
       hasAttemptedVideoValidation = true;
+      const state = videoFileValidationErrorState.getState().size === 0;
+      console.log(state);
+      if (state) {
+        const fileMaps = selectedVideoFilesState.getState();
+        computeAndUploadFiles(fileMaps, fileChoice);
+      }
     }
     updateErrorValidationUIStates(true);
   }
