@@ -2728,5 +2728,4 @@ const handleFileSelectionAndUpload = (() => {
     resetFileSelectionHandler: handleSelectionInternalReset
   };
 })();
-testing now
 handleFileSelectionAndUpload.init();
