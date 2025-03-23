@@ -1,7 +1,4 @@
-const API_BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5239"
-    : `http://${window.location.hostname}:5239`;
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 //global state variables and functions
 
@@ -131,10 +128,6 @@ function setCurrentStudentData(data) {
   sessionStorage.setItem("currentStudentGeneralData", JSON.stringify(data));
 }
 
-function getCurrentUserData() {
-  return userState.getState();
-}
-
 function getCurrentStudentId() {
   return userIdState.getState();
 }
@@ -201,81 +194,50 @@ const generalHandler = (() => {
   const generalContainer = document.querySelector("[data-container]");
 
   const dynamicContent = generalContainer.lastElementChild;
+
   const staticContent = generalContainer.firstElementChild;
 
   // Function to calculate the total height (static + dynamic)
+  // function getTotalHeight() {
+  //   // Static height: including header, footer, and any padding/borders
+  //   const staticHeight =
+  //     staticContent.offsetHeight +
+  //     parseFloat(window.getComputedStyle(generalContainer).paddingTop) +
+  //     parseFloat(window.getComputedStyle(generalContainer).paddingBottom);
+
+  //   // Dynamic height: height of the content that changes
+  //   const dynamicHeight = dynamicContent.offsetHeight;
+
+  //   console.log(dynamicContent.offsetHeight);
+  //   console.log(dynamicContent.scrollHeight);
+
+  //   console.log(dynamicHeight);
+  //   console.log(staticHeight);
+
+  //   return staticHeight + dynamicHeight;
+
+  //   // Return the total height (static + dynamic)
+  // }
   function getTotalHeight() {
-    // Static height: including header, footer, and any padding/borders
+    const minHeight = 350; // Set your desired minimum height
     const staticHeight =
       staticContent.offsetHeight +
       parseFloat(window.getComputedStyle(generalContainer).paddingTop) +
       parseFloat(window.getComputedStyle(generalContainer).paddingBottom);
 
-    // Dynamic height: height of the content that changes
-    const dynamicHeight = dynamicContent.scrollHeight;
+    const dynamicHeight = dynamicContent.offsetHeight;
 
-    // Return the total height (static + dynamic)
-    return staticHeight + dynamicHeight;
+    return Math.max(staticHeight + dynamicHeight, minHeight);
   }
 
   const resizeObserver = new ResizeObserver(() => {
-    const totalHeight = getTotalHeight();
-    generalContainer.style.height = `${totalHeight}px`;
+    requestAnimationFrame(() => {
+      const totalHeight = getTotalHeight();
+      generalContainer.style.height = `${totalHeight}px`;
+    });
   });
 
   resizeObserver.observe(dynamicContent);
-})();
-
-const handleResetForm = (() => {
-  const resetBtns = document.querySelectorAll("[data-reset-button]");
-  const form = document.querySelector("[data-submitter-form]");
-
-  const selectedCodeFilesList = document.querySelector(
-    "[data-selected-code-files-list]"
-  );
-
-  const uploadingCodeFilesList = document.querySelector(
-    "[data-uploading-code-files-list]"
-  );
-
-  const selectedVideoFilesList = document.querySelector(
-    "[data-selected-video-files-list]"
-  );
-
-  const uploadingVideoFilesList = document.querySelector(
-    "[data-uploading-video-files-list]"
-  );
-
-  function resetFormFileSelectionState() {
-    selectedCodeFilesState.resetState();
-    selectedVideoFilesState.resetState();
-    selectedCourseState.resetState();
-    codeFileValidationErrorState.resetState();
-    videoFileValidationErrorState.resetState();
-    videoAssignmentNumberPicker = null;
-    codeAssignmentNumberPicker = null;
-    selectedCodeFilesList.innerHTML = "";
-    uploadingCodeFilesList.innerHTML = "";
-    selectedVideoFilesList.innerHTML = "";
-    uploadingVideoFilesList.innerHTML = "";
-  }
-
-  function resetForm() {
-    form.reset();
-    resetFormFileSelectionState();
-    resetFormStepToDefault();
-    handleFileSelectionAndUpload.resetFileSelectionHandler();
-    uploadChoiceState.resetState();
-  }
-
-  Array.from(resetBtns).forEach((resetBtn) => {
-    resetBtn.addEventListener("click", resetForm);
-  });
-
-  return {
-    resetFormFileSelectionState,
-    resetForm
-  };
 })();
 
 function showDialog(message, action) {
@@ -290,32 +252,67 @@ function resetFormStepToDefault() {
   computeFormToShow(formToHide[0], "first", "prev");
 }
 
+// function computeFormToShow(hide, show, direction) {
+//   const formToShow = document.querySelector(`[data-step-${show}]`);
+//   const generalContainer = document.querySelector("[data-container]");
+//   generalContainer.classList.add("change-form");
+//   formToShow.classList.add("active");
+//   const animationEndHandler = () => {
+//     hide.classList.remove(
+//       "active",
+//       direction === "next" ? "slide-out" : "slide-out-right"
+//     );
+//     formToShow.classList.remove(
+//       direction === "next" ? "slide-in" : "slide-in-left"
+//     );
+//     generalContainer.classList.remove("change-form");
+//     hide.removeEventListener("animationend", animationEndHandler);
+//   };
+
+//   if (direction === "next") {
+//     hide.classList.add("slide-out");
+//     formToShow.classList.add("slide-in");
+//     hide.addEventListener("animationend", animationEndHandler);
+//   } else if (direction === "prev") {
+//     hide.classList.add("slide-out-right");
+//     formToShow.classList.add("slide-in-left");
+//     hide.addEventListener("animationend", animationEndHandler);
+//   }
+// }
+
 function computeFormToShow(hide, show, direction) {
   const formToShow = document.querySelector(`[data-step-${show}]`);
   const generalContainer = document.querySelector("[data-container]");
-  generalContainer.classList.add("change-form");
-  formToShow.classList.add("active");
-  const animationEndHandler = () => {
-    hide.classList.remove(
-      "active",
-      direction === "next" ? "slide-out" : "slide-out-right"
-    );
-    formToShow.classList.remove(
-      direction === "next" ? "slide-in" : "slide-in-left"
-    );
-    generalContainer.classList.remove("change-form");
-    hide.removeEventListener("animationend", animationEndHandler);
-  };
 
-  if (direction === "next") {
-    hide.classList.add("slide-out");
-    formToShow.classList.add("slide-in");
-    hide.addEventListener("animationend", animationEndHandler);
-  } else if (direction === "prev") {
-    hide.classList.add("slide-out-right");
-    formToShow.classList.add("slide-in-left");
-    hide.addEventListener("animationend", animationEndHandler);
-  }
+  generalContainer.classList.add("change-form");
+
+  requestAnimationFrame(() => {
+    formToShow.classList.add("active");
+
+    const animationEndHandler = () => {
+      requestAnimationFrame(() => {
+        hide.classList.remove(
+          "active",
+          direction === "next" ? "slide-out" : "slide-out-right"
+        );
+        formToShow.classList.remove(
+          direction === "next" ? "slide-in" : "slide-in-left"
+        );
+        generalContainer.classList.remove("change-form");
+        hide.removeEventListener("animationend", animationEndHandler);
+      });
+    };
+
+    if (direction === "next") {
+      hide.classList.add("slide-out");
+      formToShow.classList.add("slide-in");
+      hide.addEventListener("animationend", animationEndHandler);
+    } else if (direction === "prev") {
+      hide.classList.add("slide-out-right");
+      formToShow.classList.add("slide-in-left");
+      hide.addEventListener("animationend", animationEndHandler);
+    }
+  });
 }
 
 function showToast(message, type) {
@@ -350,16 +347,86 @@ function getCourseAssignmentMetadata(requestData) {
 
 //handle toast message
 
+// const handleToastMessage = (() => {
+//   const toastTemplate = document.querySelector("[data-toast-template]");
+//   const toastPlaceholder = document.querySelector("[data-toast-placeholder]");
+
+//   function updateToastContainerHeight() {
+//     let totalHeight = 0;
+//     Array.from(toastPlaceholder.children).forEach((toast) => {
+//       totalHeight += toast.offsetHeight;
+//     });
+//     toastPlaceholder.style.height = `${totalHeight}px`;
+//   }
+
+//   function displayToast(message, type) {
+//     const toastTemplateContent = toastTemplate.content.cloneNode(true);
+//     const toastMessageIcon = toastTemplateContent.querySelector(
+//       `[data-toast-icon-type-${type}]`
+//     );
+//     const toastMessage = toastTemplateContent.querySelector(
+//       "[data-toast-message]"
+//     );
+//     const toastCloseButton = toastTemplateContent.querySelector(
+//       "[data-toast-close-button]"
+//     );
+
+//     toastMessageIcon.classList.add("active");
+//     toastMessage.textContent = message;
+//     toastPlaceholder.appendChild(toastTemplateContent);
+//     const appendedToast = toastPlaceholder.lastElementChild;
+//     appendedToast.dataset.toastType = type;
+//     appendedToast.classList.add("toast-in");
+
+//     if (toastPlaceholder.children.length > 0) {
+//       toastPlaceholder.classList.add("active");
+//     }
+
+//     updateToastContainerHeight();
+
+//     toastCloseButton.addEventListener("click", () => {
+//       closeToast(appendedToast);
+//     });
+
+//     setTimeout(() => {
+//       closeToast(appendedToast);
+//     }, 4000);
+//   }
+
+//   function closeToast(toast) {
+//     toast.classList.remove("toast-in");
+//     toast.classList.add("toast-out");
+
+//     toast.addEventListener(
+//       "animationend",
+//       () => {
+//         toastPlaceholder.removeChild(toast);
+//         updateToastContainerHeight();
+//         if (toastPlaceholder.children.length < 1) {
+//           toastPlaceholder.classList.remove("active");
+//         }
+//       },
+//       { once: true }
+//     );
+//   }
+
+//   return {
+//     displayToast
+//   };
+// })();
+
 const handleToastMessage = (() => {
   const toastTemplate = document.querySelector("[data-toast-template]");
   const toastPlaceholder = document.querySelector("[data-toast-placeholder]");
 
   function updateToastContainerHeight() {
-    let totalHeight = 0;
-    Array.from(toastPlaceholder.children).forEach((toast) => {
-      totalHeight += toast.offsetHeight;
+    requestAnimationFrame(() => {
+      let totalHeight = 0;
+      Array.from(toastPlaceholder.children).forEach((toast) => {
+        totalHeight += toast.offsetHeight;
+      });
+      toastPlaceholder.style.height = `${totalHeight}px`;
     });
-    toastPlaceholder.style.height = `${totalHeight}px`;
   }
 
   function displayToast(message, type) {
@@ -376,41 +443,48 @@ const handleToastMessage = (() => {
 
     toastMessageIcon.classList.add("active");
     toastMessage.textContent = message;
-    toastPlaceholder.appendChild(toastTemplateContent);
-    const appendedToast = toastPlaceholder.lastElementChild;
-    appendedToast.dataset.toastType = type;
-    appendedToast.classList.add("toast-in");
 
-    if (toastPlaceholder.children.length > 0) {
-      toastPlaceholder.classList.add("active");
-    }
+    requestAnimationFrame(() => {
+      toastPlaceholder.appendChild(toastTemplateContent);
+      const appendedToast = toastPlaceholder.lastElementChild;
+      appendedToast.dataset.toastType = type;
+      appendedToast.classList.add("toast-in");
 
-    updateToastContainerHeight();
+      if (toastPlaceholder.children.length > 0) {
+        toastPlaceholder.classList.add("active");
+      }
 
-    toastCloseButton.addEventListener("click", () => {
-      closeToast(appendedToast);
+      updateToastContainerHeight();
+
+      toastCloseButton.addEventListener("click", () => {
+        closeToast(appendedToast);
+      });
+
+      setTimeout(() => {
+        closeToast(appendedToast);
+      }, 4000);
     });
-
-    setTimeout(() => {
-      closeToast(appendedToast);
-    }, 4000);
   }
 
   function closeToast(toast) {
-    toast.classList.remove("toast-in");
-    toast.classList.add("toast-out");
+    requestAnimationFrame(() => {
+      toast.classList.remove("toast-in");
+      toast.classList.add("toast-out");
 
-    toast.addEventListener(
-      "animationend",
-      () => {
-        toastPlaceholder.removeChild(toast);
-        updateToastContainerHeight();
-        if (toastPlaceholder.children.length < 1) {
-          toastPlaceholder.classList.remove("active");
-        }
-      },
-      { once: true }
-    );
+      toast.addEventListener(
+        "animationend",
+        () => {
+          requestAnimationFrame(() => {
+            toastPlaceholder.removeChild(toast);
+            updateToastContainerHeight();
+            if (toastPlaceholder.children.length < 1) {
+              toastPlaceholder.classList.remove("active");
+            }
+          });
+        },
+        { once: true }
+      );
+    });
   }
 
   return {
@@ -507,7 +581,6 @@ const handleFirstStep = (() => {
       userIdState.setState(studentIdInput.value);
       try {
         var response = await checkForStudentRequest(studentIdInput.value);
-        console.log(response);
         updateUItoDefault();
         if (response.status == "Present") {
           setCurrentStudentData(response.data);
@@ -1343,7 +1416,7 @@ const handleFileSelectionAndUpload = (() => {
     "[data-uploading-video-files]"
   );
 
-  const uploadingVideoFilesList = uploadingCodeFilesContainer.querySelector(
+  const uploadingVideoFilesList = uploadingVideoFilesContainer.querySelector(
     "[data-uploading-video-files-list]"
   );
 
@@ -2162,13 +2235,19 @@ const handleFileSelectionAndUpload = (() => {
     uploadButton.setAttribute("disabled", "true");
   }
 
+  function enableFileUploadStepButtons() {
+    backButton.removeAttribute("disabled");
+    resetButton.removeAttribute("disabled");
+    uploadButton.removeAttribute("disabled");
+  }
+
   function replaceUploadCancelButtonWithCheckmark(fileName) {
     const cancelBtn = fileUploadStepContainer
-      .querySelector(`[data-uploading-filename=${fileName}]`)
+      .querySelector(`[data-uploading-filename="${fileName}"]`)
       ?.querySelector("[data-cancel-uploading-file-button]");
 
     const checkmark = fileUploadStepContainer
-      .querySelector(`[data-uploading-filename=${fileName}]`)
+      .querySelector(`[data-uploading-filename="${fileName}"]`)
       ?.querySelector("[data-file-uploaded-checkmark]");
 
     if (checkmark && cancelBtn) {
@@ -2184,37 +2263,43 @@ const handleFileSelectionAndUpload = (() => {
     }
   }
 
-  function updateUIonUPloadStart() {
+  function updateUIonUploadStart() {
     const choice = uploadChoiceState.getState();
     if (choice === "code") {
+      selectedCodeFilesContainer.classList.remove("active");
+      uploadingCodeFilesContainer.classList.add("active");
       selectedCodeFilesList.classList.remove("active");
       uploadingCodeFilesList.classList.add("active");
     } else if (choice === "video") {
-      uploadingCodeFilesList.classList.remove("active");
-      selectedCodeFilesList.classList.add("active");
+      selectedVideoFilesContainer.classList.remove("active");
+      uploadingVideoFilesContainer.classList.add("active");
+      uploadingVideoFilesList.classList.add("active");
+      selectedVideoFilesList.classList.remove("active");
     }
     disableFileUploadStepButtons();
   }
 
-  function abortUploadReq(fileName) {
-    const choice = uploadChoiceState.getState();
-    if (choice === "code") {
-      const currentUploadingFile = currentUploadingCodeFileState.getState();
-      const currentReq = currentCodeFileUploadReqState.getState();
-      if (currentUploadingFile.name === fileName && currentReq) {
-        currentReq.abort();
-      }
-    } else if (choice === "video") {
-      const currentUploadingFile = currentUploadingVideoFileState.getState();
-      const currentReq = currentVideoFileUploadReqState.getState();
-      if (currentUploadingFile.name === fileName && currentReq) {
-        currentReq.abort();
-      }
-    }
+  function updateUiOnUploadComplete() {
+    handleResetForm.resetFormFileSelectionState();
+
+    handleFileSelectionAndUpload.resetFileSelectionHandler();
+
+    handleFileSelectionAndUpload.setIsUploadingState(false);
+    enableFileUploadStepButtons();
+  }
+
+  function abortUploadReq(choice) {
+    const currentReqState =
+      choice === "code"
+        ? currentCodeFileUploadReqState
+        : currentVideoFileUploadReqState;
+    currentReqState.getState().abort();
   }
 
   function cancelUpload(fileName, li) {
+    console.log("got here");
     const choice = uploadChoiceState.getState();
+
     const fileUploadQueueState =
       choice === "code"
         ? codeFilesUploadQueueState
@@ -2224,19 +2309,24 @@ const handleFileSelectionAndUpload = (() => {
         ? codeFilesUploadQueueState.getState()
         : videoFilesUploadQueueState.getState();
 
-    const index = fileUploadQueue.findIndex((file) => file.name === fileName);
+    console.log(fileUploadQueue);
+
+    const index = fileUploadQueue.findIndex(
+      (file) => file.assignmentFile.name === fileName
+    );
+
     if (index != -1) {
       fileUploadQueue.splice(index, 1);
       li.remove();
       fileUploadQueueState.setState(fileUploadQueue);
-      abortUploadReq(fileName);
+      abortUploadReq(choice);
     }
   }
 
   function createUploadListItem(fileMap) {
     const fileChoice = uploadChoiceState.getState();
-    const file = fileMap.assignmentFile.name;
-    const number = file.assignmentNumber;
+    const file = fileMap.assignmentFile;
+    const number = fileMap.assignmentNumber;
     const codeFileSvg = `<svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -2296,11 +2386,13 @@ const handleFileSelectionAndUpload = (() => {
             <span
               class="uploading-file-progress-text"
               data-uploading-file-progress-text
-              >0% of 20mb</span
+              ><span data-uploading-file-progress-percent>0</span>% of ${formatFileSize(
+                file.size
+              )}</span
             >
             <span
-              data-uploading-file-wating-text
-              class="uploading-file-wating-text active"
+              data-uploading-file-waiting-text
+              class="uploading-file-waiting-text active"
             >
               wating to upload
             </span>
@@ -2351,11 +2443,56 @@ const handleFileSelectionAndUpload = (() => {
     cancelBtn.addEventListener("click", () => {
       cancelUpload(file.name, li);
     });
+
+    return li;
+  }
+
+  function updateUploadProgress(progress, file) {
+    const filesUploadingList =
+      uploadChoiceState.getState() === "code"
+        ? uploadingCodeFilesList
+        : uploadingVideoFilesList;
+
+    const fileName = file.assignmentFile.name;
+    const uploadingFileList = filesUploadingList.querySelector(
+      `[data-uploading-filename="${fileName}"]`
+    );
+    const progressBar = uploadingFileList.querySelector(
+      `[data-file-uploading-progress]`
+    );
+
+    const progressText = uploadingFileList.querySelector(
+      `[data-uploading-file-progress-text]`
+    );
+
+    if (progressText) {
+      progressText.classList.add("active");
+    }
+
+    if (progressBar) {
+      progressBar.classList.add("active");
+      progressBar.value = progress;
+    }
+    const waitingText = uploadingFileList.querySelector(
+      `[data-uploading-file-waiting-text]`
+    );
+
+    if (waitingText) {
+      waitingText.classList.remove("active");
+    }
+
+    const progressPercentSpan = uploadingFileList.querySelector(
+      `[data-uploading-file-progress-percent]`
+    );
+
+    if (progressPercentSpan) {
+      progressPercentSpan.textContent = `${Math.trunc(progress)}`;
+    }
   }
 
   function addUploadFileToList(fileMap) {
     const fileChoice = uploadChoiceState.getState();
-    const li = createFilelistItem(fileMap);
+    const li = createUploadListItem(fileMap);
     fileChoice === "code"
       ? uploadingCodeFilesList.appendChild(li)
       : uploadingVideoFilesList.appendChild(li);
@@ -2381,7 +2518,7 @@ const handleFileSelectionAndUpload = (() => {
     const assigmentType = selectedCourseState.getState();
     let uploadChoice = uploadChoiceState.getState();
     let requestData = {};
-    requestData["StudentData"] = student;
+    requestData["StudentId"] = student.studentId;
     requestData["AssignmentNumber"] = fileMap.assignmentNumber;
     requestData["SubmissionFileType"] = uploadChoice;
     requestData["AssignmentType"] = assigmentType;
@@ -2409,77 +2546,124 @@ const handleFileSelectionAndUpload = (() => {
         formData.append(key, requestData[key]);
       }
 
+      // const antiForgeryToken = document.querySelector(
+      //   '[name="__RequestVerificationToken"]'
+      // ).value;
+
+      // formData.append("__RequestVerificationToken", antiForgeryToken);
+
       req.onload = function () {
-        console.log(this.responseText);
-        resolve();
+        if (this.status !== 200) {
+          reject(new Error(this.responseText));
+        }
+        resolve(this.responseText);
+      };
+
+      req.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+          const progress = (e.loaded / e.total) * 100;
+          if (fileMap) {
+            updateUploadProgress(progress, fileMap);
+          }
+        }
+      };
+
+      req.onabort = function () {
+        reject(new Error("Upload aborted"));
       };
 
       req.onerror = function () {
-        console.log(this.responseText);
         reject(new Error("Upload failed"));
       };
+
+      // req.setRequestHeader("RequestVerificationToken", antiForgeryToken);
 
       req.send(formData);
     });
   }
 
-  function computeUploadQueueBaseCase() {
-    const choice = uploadChoiceState.getState();
-    if (choice === "code") {
-      return (
-        isCodeFileUploadingState.getState() ||
-        !codeFilesUploadQueueState.getState().length
-      );
-    } else if (choice === "video") {
-      return (
-        isVideoFileUploadingState.getState() ||
-        !videoFilesUploadQueueState.getState().length
-      );
-    }
-  }
+  // function computeUploadQueueBaseCase() {
+  //   const choice = uploadChoiceState.getState();
+  //   if (choice === "code") {
+  //     return (
+  //       isCodeFileUploadingState.getState() ||
+  //       !codeFilesUploadQueueState.getState().length
+  //     );
+  //   } else if (choice === "video") {
+  //     return (
+  //       isVideoFileUploadingState.getState() ||
+  //       !videoFilesUploadQueueState.getState().length
+  //     );
+  //   }
+  // }
 
   function setIsUploadingState(state) {
     uploadChoiceState.getState() === "code"
       ? isCodeFileUploadingState.setState(state)
       : isVideoFileUploadingState.setState(state);
+    isFileUploadingState.setState(state);
   }
 
-  function getFileMapToUpload(index) {
-    uploadChoiceState.getState() === "code"
-      ? codeFilesUploadQueueState.getState()[index]
-      : videoFilesUploadQueueState.getState()[index];
-  }
+  // function getFileMapToUpload(index) {
+  //   uploadChoiceState.getState() === "code"
+  //     ? codeFilesUploadQueueState.getState()[index]
+  //     : videoFilesUploadQueueState.getState()[index];
+  // }
 
-  function removedProccesedQueueFile() {
-    uploadChoiceState.getState() === "code"
-      ? codeFilesUploadQueueState.getState().shift()
-      : videoFilesUploadQueueState.getState().shift();
-  }
+  // function removedProccesedQueueFile() {
+  //   uploadChoiceState.getState() === "code"
+  //     ? codeFilesUploadQueueState.getState().shift()
+  //     : videoFilesUploadQueueState.getState().shift();
+  // }
 
   async function processUploadQueue(queue) {
-    if (!queue.length) return;
-    const fileMap = queue[0];
+    console.log(queue);
+    if (!queue.length || isFileUploadingState.getState()) return;
+    console.log(queue);
     setIsUploadingState(true);
+    const fileMap = queue[0];
     try {
-      await uploadFile(fileMap);
+      const result = await uploadFile(fileMap);
+      console.log(result);
+      replaceUploadCancelButtonWithCheckmark(fileMap.assignmentFile.name);
       queue.shift();
+      const metaDataRequestData = computeAssignmentMetaDataRequestData(
+        selectedCourseState.getState()
+      );
+      fetchAndUpdateAssignmentMetaDataState(metaDataRequestData);
     } catch (error) {
-      console.log(error);
+      console.log(`Upload queue error: ${error.message}`);
     } finally {
       setIsUploadingState(false);
     }
-    processUploadQueue(queue);
+    if (queue.length > 0) {
+      requestAnimationFrame(() => processUploadQueue(queue));
+    } else {
+      console.log("All uploads completed.");
+      updateUiOnUploadComplete();
+    }
   }
 
-  function computeAndUploadFiles(filesMap, choice) {
-    for (let fileMap of filesMap) {
+  function computeFiles(filesMap) {
+    const files = filesMap.values();
+
+    for (let fileMap of files) {
       addUploadFileToList(fileMap);
     }
+  }
+
+  function uploadFiles(filesMap, choice) {
+    const files = filesMap.values();
+    const uploadQueueState =
+      choice === "code"
+        ? codeFilesUploadQueueState
+        : videoFilesUploadQueueState;
     const uploadQueue =
       choice === "code"
         ? codeFilesUploadQueueState.getState()
         : videoFilesUploadQueueState.getState();
-    uploadQueue.push(...filesMap);
+    uploadQueue.push(...files);
+    uploadQueueState.setState(uploadQueue);
     processUploadQueue(uploadQueue);
   }
 
@@ -2489,19 +2673,21 @@ const handleFileSelectionAndUpload = (() => {
       validateSelectedCodeFiles();
       hasAttemptedCodeValidation = true;
       const state = codeFileValidationErrorState.getState().size === 0;
-      console.log(state);
       if (state) {
         const fileMaps = selectedCodeFilesState.getState();
-        computeAndUploadFiles(fileMaps, fileChoice);
+        computeFiles(fileMaps);
+        updateUIonUploadStart();
+        uploadFiles(fileMaps, fileChoice);
       }
     } else if (fileChoice === "video") {
       validateSelectedVideoFiles();
       hasAttemptedVideoValidation = true;
       const state = videoFileValidationErrorState.getState().size === 0;
-      console.log(state);
       if (state) {
         const fileMaps = selectedVideoFilesState.getState();
-        computeAndUploadFiles(fileMaps, fileChoice);
+        computeFiles(fileMaps);
+        updateUIonUploadStart();
+        uploadFiles(fileMaps, fileChoice);
       }
     }
     updateErrorValidationUIStates(true);
@@ -2725,7 +2911,61 @@ const handleFileSelectionAndUpload = (() => {
       initializeEventListiners();
       initializeDefaults();
     },
-    resetFileSelectionHandler: handleSelectionInternalReset
+    resetFileSelectionHandler: handleSelectionInternalReset,
+    setIsUploadingState
   };
 })();
 handleFileSelectionAndUpload.init();
+
+const handleResetForm = (() => {
+  const resetBtns = document.querySelectorAll("[data-reset-button]");
+  const form = document.querySelector("[data-submitter-form]");
+
+  const selectedCodeFilesList = document.querySelector(
+    "[data-selected-code-files-list]"
+  );
+
+  const uploadingCodeFilesList = document.querySelector(
+    "[data-uploading-code-files-list]"
+  );
+
+  const selectedVideoFilesList = document.querySelector(
+    "[data-selected-video-files-list]"
+  );
+
+  const uploadingVideoFilesList = document.querySelector(
+    "[data-uploading-video-files-list]"
+  );
+
+  function resetFormFileSelectionState() {
+    selectedCodeFilesState.resetState();
+    selectedVideoFilesState.resetState();
+    selectedCourseState.resetState();
+    codeFileValidationErrorState.resetState();
+    videoFileValidationErrorState.resetState();
+    videoAssignmentNumberPicker = null;
+    codeAssignmentNumberPicker = null;
+    selectedCodeFilesList.innerHTML = "";
+    uploadingCodeFilesList.innerHTML = "";
+    selectedVideoFilesList.innerHTML = "";
+    uploadingVideoFilesList.innerHTML = "";
+  }
+
+  function resetForm() {
+    form.reset();
+    resetFormFileSelectionState();
+    resetFormStepToDefault();
+    handleFileSelectionAndUpload.resetFileSelectionHandler();
+    uploadChoiceState.resetState();
+    handleFileSelectionAndUpload.setIsUploadingState(false);
+  }
+
+  Array.from(resetBtns).forEach((resetBtn) => {
+    resetBtn.addEventListener("click", resetForm);
+  });
+
+  return {
+    resetFormFileSelectionState,
+    resetForm
+  };
+})();

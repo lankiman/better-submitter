@@ -18,19 +18,20 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100svh;
+  min-height: 100svh;
   overflow: hidden;
   background-color: rgb(207, 203, 203);
-  padding-bottom: 4rem;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
 }
 
 .container {
-  min-height: 50%;
-  max-height: 78%;
+  min-height: auto;
+  max-height: max-content;
   overflow: hidden;
   width: 40%;
   position: relative;
-  padding: 2rem;
+  padding: 1.5rem 2rem;
   border-radius: 0.5rem;
   box-shadow: var(--shadow-md);
   background-color: whitesmoke;
@@ -221,7 +222,9 @@ body {
   animation: borderRainbow 4s linear infinite;
 }
 
-.proceed-btn:disabled {
+.proceed-btn:disabled,
+.reset-btn:disabled,
+.back-btn:disabled {
   background-color: gray;
   cursor: unset;
 }
@@ -692,7 +695,7 @@ body {
 .selected-file-list-item-name {
   padding: 0;
   margin: 0;
-  font-size: medium;
+  font-size: small;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -872,8 +875,11 @@ body {
 }
 
 .uploading-file-list-item-details {
+  width: 80%;
+  overflow: hidden;
 }
 .uploading-file-progress-container {
+  margin-top: 0.2rem;
 }
 
 .uploading-file-list-item-name {
@@ -881,6 +887,8 @@ body {
 
 .uploading-file-progress-bar {
   display: none;
+  width: 85%;
+  height: 1rem;
 }
 
 .uploading-file-progress-bar.active {
