@@ -2322,6 +2322,8 @@ const handleFileSelectionAndUpload = (() => {
 
     handleFileSelectionAndUpload.setIsUploadingState(false);
     enableFileUploadStepButtons();
+
+    showToast("Files uploaded Sucessfully", "success");
   }
 
   function abortUploadReq(choice) {
