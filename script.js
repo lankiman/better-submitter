@@ -90,6 +90,12 @@ assignmentMetaDataState.subscribe(
   }
 );
 
+function isValidStudentId(studentId) {
+  const matricPattern = /^UG\/\d{2}\/\d{4}$/;
+  const jambPattern = /^\d{12}[A-Z]{2}$/;
+  return matricPattern.test(studentId) || jambPattern.test(studentId);
+}
+
 const formatFileSize = (bytes) => {
   if (bytes === 0) return "0 bytes";
 
@@ -530,12 +536,6 @@ const handleFirstStep = (() => {
     studentIdInput.classList.remove("input-error-active");
   }
 
-  function isValidStudentId(studentId) {
-    const matricPattern = /^UG\/\d{2}\/\d{4}$/;
-    const jambPattern = /^\d{8}[A-Z]{2}$/;
-    return matricPattern.test(studentId) || jambPattern.test(studentId);
-  }
-
   function validateStudentId(value) {
     if (value == "") {
       updateUIonError("Student ID is required");
@@ -662,19 +662,47 @@ const handleStudentDetailsStep = (() => {
     spinnerSection.classList.remove("active");
   }
 
+  function isValidName(name) {
+    const namePattern = /^[A-Za-z]+(-[A-Za-z]+)*$/;
+    return namePattern.test(name.trim());
+  }
+  function isEmpty(value) {
+    return value.trim() == "";
+  }
+
+  const nameErrorMessage =
+    "Names can only contain letters and hyphens (-), and cannot start with hypens";
+
   function populateStudentDataError(data) {
     let errors = {};
     data.forEach((element) => {
-      if (element.name == "firstname" && element.value == "") {
-        errors = { ...errors, firstname: "Firstname field is required" };
+      const { name, value } = element;
+
+      if (name === "firstname") {
+        if (isEmpty(value)) {
+          errors.firstname = "Firstname field is required";
+        } else if (!isValidName(value)) {
+          errors.firstname = nameErrorMessage;
+        }
       }
-      if (element.name == "surname" && element.value == "") {
-        errors = { ...errors, surname: "Surnname field is required" };
+
+      if (name === "surname") {
+        if (isEmpty(value)) {
+          errors.surname = "Surname field is required";
+        } else if (!isValidName(value)) {
+          errors.surname = nameErrorMessage;
+        }
       }
-      if (element.name == "department" && element.value == "") {
-        errors = { ...errors, department: "Please choose a department" };
+
+      if (name === "middlename" && !isEmpty(value) && !isValidName(value)) {
+        errors.middlename = nameErrorMessage;
+      }
+
+      if (name === "department" && isEmpty(value)) {
+        errors.department = "Please choose a department";
       }
     });
+
     return errors;
   }
 
@@ -743,37 +771,41 @@ const handleStudentDetailsStep = (() => {
 
   function validateSingleStudentDetailsField(inputField) {
     const fieldName = inputField.id.split("-")[0];
+    const value = inputField.value;
     const messageField = studentDetailsStepContainer.querySelector(
       `[data-error-${fieldName}]`
     );
 
-    if (fieldName == "firstname" && inputField.value == "") {
+    const requiredFields = ["firstname", "surname", "department"];
+    const nameFields = ["firstname", "surname", "middlename"];
+
+    if (requiredFields.includes(fieldName) && isEmpty(value)) {
       updateSingleDetailsFieldErrorMessage(
         inputField,
         messageField,
-        "Firstname field is required"
+        `${capitalize(fieldName)} field is required`
       );
+      return;
     }
 
-    if (fieldName == "surname" && inputField.value == "") {
+    if (
+      nameFields.includes(fieldName) &&
+      !isEmpty(value) &&
+      !isValidName(value)
+    ) {
       updateSingleDetailsFieldErrorMessage(
         inputField,
         messageField,
-        "Surnname field is required"
+        nameErrorMessage
       );
+      return;
     }
 
-    if (fieldName == "department" && inputField.value == "") {
-      updateSingleDetailsFieldErrorMessage(
-        inputField,
-        messageField,
-        "Department field is required"
-      );
-    }
+    resetSingleDetailsFieldErrorMessage(inputField, messageField);
+  }
 
-    if (inputField.value) {
-      resetSingleDetailsFieldErrorMessage(inputField, messageField);
-    }
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   function focusNextInputFieldOrSubmitOnEnter(inputField) {
@@ -819,13 +851,16 @@ const handleStudentDetailsStep = (() => {
   let proceededBefore = false;
   let dialogShownBefore = false;
   async function submitStudentDetailsRequestAction(data) {
-    proceededBefore = true;
     try {
       const response = await submitStudentDetailsRequest(data);
       console.log(response);
       if (response.status == "Present") {
         showToast(response.message, "info");
+        proceededBefore = false;
+        dialogShownBefore = false;
       } else {
+        proceededBefore = false;
+        dialogShownBefore = false;
         showToast(response.message, "success");
         setCurrentStudentData(response.data);
         if (response.data.department === "Electrical") {
@@ -843,8 +878,6 @@ const handleStudentDetailsStep = (() => {
         }
       }
       updateUItoDefault();
-      proceededBefore = false;
-      dialogShownBefore = false;
     } catch (error) {
       updateUItoDefault();
       console.error(error);
@@ -861,6 +894,7 @@ const handleStudentDetailsStep = (() => {
   }
 
   function handleStudentDataProceed() {
+    proceededBefore = true;
     const isValidData = validateStudentDetails(studentDataInputFields);
     if (isValidData && dialogShownBefore == false) {
       showDialog(
@@ -877,7 +911,9 @@ const handleStudentDetailsStep = (() => {
     proceedButton.addEventListener("click", handleStudentDataProceed);
     studentDataInputFields.forEach((field) => {
       field.addEventListener("input", (event) => {
+        console.log(proceededBefore);
         if (proceededBefore) {
+          console.log("triggerd");
           validateSingleStudentDetailsField(event.target);
         }
       });
