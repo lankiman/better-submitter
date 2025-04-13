@@ -2358,8 +2358,10 @@ const handleFileSelectionAndUpload = (() => {
       showToast("Files uploaded Sucessfully", "success");
       handleResetForm.resetFormFileSelectionState();
       const courseState = selectedCourseState.getState();
+      console.log(courseState);
       handleFileSelectionAndUpload.resetFileSelectionHandler();
       selectedCourseState.setState(courseState);
+      console.log(selectedCourseState.getState());
     }
   }
 
