@@ -2357,7 +2357,9 @@ const handleFileSelectionAndUpload = (() => {
     } else {
       showToast("Files uploaded Sucessfully", "success");
       handleResetForm.resetFormFileSelectionState();
+      const courseState = selectedCourseState.getState();
       handleFileSelectionAndUpload.resetFileSelectionHandler();
+      selectedCourseState.setState(courseState);
     }
   }
 
