@@ -2315,15 +2315,50 @@ const handleFileSelectionAndUpload = (() => {
     disableFileUploadStepButtons();
   }
 
+  const uploadErrorQueue = new Set();
+
+  function markFileAsFailed(fileName) {
+    const item = document.querySelector(
+      `[data-uploading-filename="${fileName}"]`
+    );
+    if (!item) return;
+
+    const progressText = item.querySelector(
+      "[data-uploading-file-progress-text]"
+    );
+    const waitingText = item.querySelector(
+      "[data-uploading-file-waiting-text]"
+    );
+    const progressBar = item.querySelector("[data-file-uploading-progress]");
+
+    if (progressText) {
+      progressText.textContent = "upload failed";
+      progressText.style.color = "red";
+    }
+
+    if (waitingText) {
+      waitingText.classList.remove("active");
+    }
+
+    if (progressBar) {
+      progressBar.style.display = "none";
+    }
+
+    uploadErrorQueue.add(fileName);
+  }
+
   function updateUiOnUploadComplete() {
-    handleResetForm.resetFormFileSelectionState();
-
-    handleFileSelectionAndUpload.resetFileSelectionHandler();
-
     handleFileSelectionAndUpload.setIsUploadingState(false);
     enableFileUploadStepButtons();
 
-    showToast("Files uploaded Sucessfully", "success");
+    if (uploadErrorQueue.size > 0) {
+      showToast("Some files failed to upload. Please retry them.", "info");
+      uploadErrorQueue.clear();
+    } else {
+      showToast("Files uploaded Sucessfully", "success");
+      handleResetForm.resetFormFileSelectionState();
+      handleFileSelectionAndUpload.resetFileSelectionHandler();
+    }
   }
 
   function abortUploadReq(choice) {
@@ -2358,6 +2393,11 @@ const handleFileSelectionAndUpload = (() => {
       li.remove();
       fileUploadQueueState.setState(fileUploadQueue);
       abortUploadReq(choice);
+    } else {
+      const item = document.querySelector(
+        `[data-uploading-filename="${fileName}"]`
+      );
+      item.remove();
     }
   }
 
@@ -2584,11 +2624,7 @@ const handleFileSelectionAndUpload = (() => {
         formData.append(key, requestData[key]);
       }
 
-      // const antiForgeryToken = document.querySelector(
-      //   '[name="__RequestVerificationToken"]'
-      // ).value;
-
-      // formData.append("__RequestVerificationToken", antiForgeryToken);
+      console.log(requestData.File);
 
       req.onload = function () {
         if (this.status !== 200) {
@@ -2671,6 +2707,9 @@ const handleFileSelectionAndUpload = (() => {
       fetchAndUpdateAssignmentMetaDataState(metaDataRequestData);
     } catch (error) {
       console.log(`Upload queue error: ${error.message}`);
+      showToast("an error occured for file", "error");
+      queue.shift();
+      markFileAsFailed(fileMap.assignmentFile.name);
     } finally {
       setIsUploadingState(false);
     }
