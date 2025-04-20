@@ -286,40 +286,40 @@ function resetFormStepToDefault() {
 //   }
 // }
 
-function computeFormToShow(hide, show, direction) {
-  const formToShow = document.querySelector(`[data-step-${show}]`);
-  const generalContainer = document.querySelector("[data-container]");
+// function computeFormToShow(hide, show, direction) {
+//   const formToShow = document.querySelector(`[data-step-${show}]`);
+//   const generalContainer = document.querySelector("[data-container]");
 
-  generalContainer.classList.add("change-form");
+//   generalContainer.classList.add("change-form");
 
-  requestAnimationFrame(() => {
-    formToShow.classList.add("active");
+//   requestAnimationFrame(() => {
+//     formToShow.classList.add("active");
 
-    const animationEndHandler = () => {
-      requestAnimationFrame(() => {
-        hide.classList.remove(
-          "active",
-          direction === "next" ? "slide-out" : "slide-out-right"
-        );
-        formToShow.classList.remove(
-          direction === "next" ? "slide-in" : "slide-in-left"
-        );
-        generalContainer.classList.remove("change-form");
-        hide.removeEventListener("animationend", animationEndHandler);
-      });
-    };
+//     const animationEndHandler = () => {
+//       requestAnimationFrame(() => {
+//         hide.classList.remove(
+//           "active",
+//           direction === "next" ? "slide-out" : "slide-out-right"
+//         );
+//         formToShow.classList.remove(
+//           direction === "next" ? "slide-in" : "slide-in-left"
+//         );
+//         generalContainer.classList.remove("change-form");
+//         hide.removeEventListener("animationend", animationEndHandler);
+//       });
+//     };
 
-    if (direction === "next") {
-      hide.classList.add("slide-out");
-      formToShow.classList.add("slide-in");
-      hide.addEventListener("animationend", animationEndHandler);
-    } else if (direction === "prev") {
-      hide.classList.add("slide-out-right");
-      formToShow.classList.add("slide-in-left");
-      hide.addEventListener("animationend", animationEndHandler);
-    }
-  });
-}
+//     if (direction === "next") {
+//       hide.classList.add("slide-out");
+//       formToShow.classList.add("slide-in");
+//       hide.addEventListener("animationend", animationEndHandler);
+//     } else if (direction === "prev") {
+//       hide.classList.add("slide-out-right");
+//       formToShow.classList.add("slide-in-left");
+//       hide.addEventListener("animationend", animationEndHandler);
+//     }
+//   });
+// }
 
 function showToast(message, type) {
   return handleToastMessage.displayToast(message, type);
@@ -350,76 +350,6 @@ function getCourseAssignmentMetadata(requestData) {
     req.send();
   });
 }
-
-//handle toast message
-
-// const handleToastMessage = (() => {
-//   const toastTemplate = document.querySelector("[data-toast-template]");
-//   const toastPlaceholder = document.querySelector("[data-toast-placeholder]");
-
-//   function updateToastContainerHeight() {
-//     let totalHeight = 0;
-//     Array.from(toastPlaceholder.children).forEach((toast) => {
-//       totalHeight += toast.offsetHeight;
-//     });
-//     toastPlaceholder.style.height = `${totalHeight}px`;
-//   }
-
-//   function displayToast(message, type) {
-//     const toastTemplateContent = toastTemplate.content.cloneNode(true);
-//     const toastMessageIcon = toastTemplateContent.querySelector(
-//       `[data-toast-icon-type-${type}]`
-//     );
-//     const toastMessage = toastTemplateContent.querySelector(
-//       "[data-toast-message]"
-//     );
-//     const toastCloseButton = toastTemplateContent.querySelector(
-//       "[data-toast-close-button]"
-//     );
-
-//     toastMessageIcon.classList.add("active");
-//     toastMessage.textContent = message;
-//     toastPlaceholder.appendChild(toastTemplateContent);
-//     const appendedToast = toastPlaceholder.lastElementChild;
-//     appendedToast.dataset.toastType = type;
-//     appendedToast.classList.add("toast-in");
-
-//     if (toastPlaceholder.children.length > 0) {
-//       toastPlaceholder.classList.add("active");
-//     }
-
-//     updateToastContainerHeight();
-
-//     toastCloseButton.addEventListener("click", () => {
-//       closeToast(appendedToast);
-//     });
-
-//     setTimeout(() => {
-//       closeToast(appendedToast);
-//     }, 4000);
-//   }
-
-//   function closeToast(toast) {
-//     toast.classList.remove("toast-in");
-//     toast.classList.add("toast-out");
-
-//     toast.addEventListener(
-//       "animationend",
-//       () => {
-//         toastPlaceholder.removeChild(toast);
-//         updateToastContainerHeight();
-//         if (toastPlaceholder.children.length < 1) {
-//           toastPlaceholder.classList.remove("active");
-//         }
-//       },
-//       { once: true }
-//     );
-//   }
-
-//   return {
-//     displayToast
-//   };
-// })();
 
 const handleToastMessage = (() => {
   const toastTemplate = document.querySelector("[data-toast-template]");
@@ -613,7 +543,7 @@ const handleFirstStep = (() => {
   }
 
   function addEventListiners() {
-    proceedButton.addEventListener("click", handleProceed);
+    // proceedButton.addEventListener("click", handleProceed);
     studentIdInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();

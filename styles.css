@@ -83,6 +83,10 @@ body {
   animation: rainbow 10s linear infinite;
 }
 
+.container h2 {
+  color: red;
+}
+
 .dialog-modal {
   min-width: 30%;
   max-width: 50%;

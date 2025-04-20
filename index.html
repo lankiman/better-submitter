@@ -12,6 +12,8 @@
     <header></header>
     <main data-container class="container">
       <h1>Welcome to Better Submitter</h1>
+
+      <h2>Submissions have Ended</h2>
       <form data-submitter-form class="step-form" method="post" action="#">
         <!--First form Step section-->
         <div
@@ -36,7 +38,12 @@
             placeholder="Enter Matric or Jamb Reg No eg. UG/00/1234"
             required
           />
-          <button data-proceed-btn class="btn proceed-btn" type="button">
+          <button
+            disabled
+            data-proceed-btn
+            class="btn proceed-btn"
+            type="button"
+          >
             Proceed
           </button>
           <section data-spinner-section class="loader">
